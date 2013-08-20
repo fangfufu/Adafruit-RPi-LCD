@@ -24,7 +24,7 @@ typedef enum {
  * @brief change LCD colour
  * @return
  * - on success: 0
- * - on error: the accumulated errors from exp_write() calls.
+ * - on error: the accumulated errors from GPIO_write() calls.
  */
 int LCD_colour(Colour colour);
 #endif

@@ -1,6 +1,5 @@
 Adafruit-Raspberry-Pi-RGB-LCD-Plate-C-Library
 =============================================
-/**
 @mainpage
 \section intro Introduction
 This is a C library for driving the Adafruit Raspberry Pi RGB LCD Plate.
@@ -15,5 +14,5 @@ pin connection table below for reference.
 Pin No. |7       |6       |5       |4       |3       |2       |1       |0
 --------|--------|--------|--------|--------|--------|--------|--------|-------
  GPIO A:|GREEN   |RED     |        |LEFT    |UP      |DOWN    |RIGHT   |SELECT
- GPIO B:|RS      |RW      |E       |DB4     |DB5     |DB6     |DB7     |BLUE
-*/
+ GPIO B:|RS      |R/!W    |E       |DB4     |DB5     |DB6     |DB7     |BLUE
+

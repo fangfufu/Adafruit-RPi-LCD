@@ -41,10 +41,45 @@
 #define PORTA_GPPU              0x1F
 #define PORTB_GPPU              0x00
 
+/* Initial values for the GPIO ports */
+#define GPIOA_INIT (1 << 7) | (1 << 6)
+#define GPIOB_INIT 1 | 1 << 5
+
 /* File descriptor for the I2C bus */
 static int fd;
 /* Initialisation status */
 static int status = 0;
+
+/* buffers for the GPIO ports */
+GPIOA_BUF_t GPIOA_buf;
+GPIOB_BUF_t GPIOB_buf;
+
+/**
+ * @brief Write a byte to a register in the expander
+ * @return
+ * - on success: 0
+ * - on partial failure: the return of the write() call.
+ * - on complete failure: -1
+ */
+static int exp_write(Port port, Reg reg, uint8_t val)
+{
+    if (!status) {
+        printf("exp_write(): error: not initialised.\n");
+        return -1;
+    }
+    uint8_t buf[2];
+    buf[0] = port + reg;
+    buf[1] = val;
+    int r = write(fd, buf, sizeof(buf));
+    if ( r == 2 ) {
+        return 0;
+    } else if( r == -1 ) {
+        printf("exp_write(): write() error: %s\n", strerror(errno));
+    } else {
+        printf("exp_write(): write() error: %d\n", r);
+    }
+    return r;
+}
 
 int exp_init()
 {
@@ -70,9 +105,12 @@ int exp_init()
     r += exp_write(PortB, IOPOL, PORTB_IOPOL);
     r += exp_write(PortA, GPPU, PORTA_GPPU);
     r += exp_write(PortB, GPPU, PORTB_GPPU);
+
     /* Turn off all LEDs on the LCD */
-    r += exp_write(PortA, GPIO, (1 << 7) | (1 << 6));
-    r += exp_write(PortB, GPIO, 1);
+    GPIOA_buf.reg = GPIOA_INIT;
+    GPIOB_buf.reg = GPIOB_INIT;
+    r += GPIO_write(PortA);
+    r += GPIO_write(PortB);
     if (r == 0) {
         return r;
     }
@@ -92,24 +130,13 @@ int exp_close()
     return t;
 }
 
-int exp_write(Port port, Reg reg, uint8_t val)
+int GPIO_write(Port port)
 {
-    if (!status) {
-        printf("exp_write(): error: not initialised.\n");
-        return -1;
-    }
-    uint8_t buf[2];
-    buf[0] = port + reg;
-    buf[1] = val;
-    int r = write(fd, buf, sizeof(buf));
-    if ( r == 2 ) {
-        return 0;
-    } else if( r == -1 ) {
-        printf("exp_write(): write() error: %s\n", strerror(errno));
+    if (port == PortA) {
+        return exp_write(PortA, GPIO, GPIOA_buf.reg);
     } else {
-        printf("exp_write(): write() error: %d\n", r);
+        return exp_write(PortB, GPIO, GPIOB_buf.reg);
     }
-    return r;
 }
 
 uint8_t exp_read(Port port, Reg reg)
@@ -134,4 +161,13 @@ uint8_t exp_read(Port port, Reg reg)
         printf("exp_read(): read() error: %d\n", r);
     }
     return buf;
+}
+
+uint8_t GPIO_read(Port port)
+{
+    if (port == PortA) {
+        return GPIOA_buf.reg = exp_read(PortA, GPIO);
+    } else {
+        return GPIOB_buf.reg = exp_read(PortB, GPIO);
+    }
 }

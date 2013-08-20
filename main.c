@@ -9,4 +9,5 @@ int main()
 {
     exp_init();
     btn_printf(btn_blk());
+    dbg_colour_check();
 }
