@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "expander.h"
+#include "gpio.h"
 
 #include "button.h"
 
@@ -29,7 +29,7 @@ static Button raw_to_button(uint8_t btn)
 
 uint8_t btn_nblk_raw()
 {
-    return exp_read(PortA, GPIO) & BTN_MASK;
+    return GPIO_read(PortA) & BTN_MASK;
 }
 
 Button btn_nblk()

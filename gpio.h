@@ -2,8 +2,10 @@
 #define EXP_H
 
 /**
- * @file expander.h
+ * @file
  * @brief functions related to the MCP23017 I/O expander
+ * @note for GPIO related operations, please use GPIO_read() and GPIO_write(),
+ * as they update the local buffer.
  */
 
 #include <stdint.h>
@@ -65,13 +67,13 @@ typedef union  {
 
 /**
  * @brief GPIO buffer for Port A
- * @details Modify this buffer then call GPIO_write(PortA)
+ * @note Modify this buffer then call GPIO_write(PortA)
  */
 extern GPIOA_BUF_t GPIOA_buf;
 
 /**
  * @brief GPIO buffer for Port B
- * @details Modify this buffer then call GPIO_write(PortB)
+ * @note Modify this buffer then call GPIO_write(PortB)
  */
 extern GPIOB_BUF_t GPIOB_buf;
 
@@ -88,19 +90,34 @@ int exp_init();
  * @brief close down the I/O Expander
  * @return
  * - on success: 0
- * - on failure: whatever the close() call returns.
+ * - on failure: the return of close()
  */
 int exp_close();
 
 /**
+ * @brief Write a byte to a register in the expander
+ * @return
+ * - on success: 0
+ * - on partial failure: the return of the write() call.
+ * - on complete failure: -1
+ */
+int exp_write(Port port, Reg reg, uint8_t val);
+
+/**
+ * @brief Read a single byte from a register
+ */
+uint8_t exp_read(Port port, Reg reg);
+
+/**
  * @brief Write the values in the GPIO buffer to the GPIO register
  * @note GPIO buffers are GPIOA_buf and GPIOB_buf.
+ * @return same as exp_write()
  */
 int GPIO_write(Port port);
 
 /**
- * @brief Read a single byte from a register to a buffer
+ * @brief Read the values on the GPIO register to GPIO buffer
  */
-uint8_t exp_read(Port port, Reg reg);
+uint8_t GPIO_read(Port port);
 
 #endif

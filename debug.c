@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "expander.h"
+#include "gpio.h"
 #include "lcd.h"
 
 void dbg_print_ports()
 {
     printf("Port A %x\tPort B: %x\n",
-           exp_read(PortA, GPIO),
-           exp_read(PortB, GPIO)
+           GPIO_read(PortA),
+           GPIO_read(PortB)
           );
 }
 
@@ -38,4 +38,15 @@ void dbg_colour_check()
     LCD_colour(White);
     printf("White\n");
     sleep(1);
+}
+
+void dbg_led_status()
+{
+    printf("Red: %u\nGreen: %u\nBlue: %u\nregA: %x\nregB: %x\n",
+           GPIOA_buf.pin.RED,
+           GPIOA_buf.pin.GREEN,
+           GPIOB_buf.pin.BLUE,
+           GPIOA_buf.reg,
+           GPIOB_buf.reg
+    );
 }

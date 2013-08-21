@@ -6,9 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-//#include "lcd.h"
-
-#include "expander.h"
+#include "gpio.h"
 
 /* Are you using Raspberry Pi Rev 1? */
 // #define RPI_REV1
@@ -19,19 +17,19 @@
 #endif
 
 /* The address for the expansion board */
-#define I2C_ADDR 0x20
+#define I2C_ADDR                0x20
 
 /* Initial address of the IOCON register, (pg.5 of the data sheet) */
-#define IOCON_BANK_0    0x0A
+#define IOCON_BANK_0            0x0A
 
 /* Set Bank = 1, so registers for ports are grouped together
  * Set SEQOP = 1 to disable sequential operation.
  * (pg 18 of the data sheet) */
-#define IOCON_CONFIG    ( ( 1 << 5 ) | ( 1 <<7 ) )
+#define IOCON_CONFIG            (1 << 5) | (1 <<7)
 
 /* IO direction, 0 = output, 1 = input (pg. 12 of the data sheet) */
-#define PORTA_IODIR         0x1F
-#define PORTB_IODIR         0x00
+#define PORTA_IODIR             0x1F
+#define PORTB_IODIR             0x00
 
 /* Input polarity, 1 = inverse, 0 = normal (pg 13 of the data sheet) */
 #define PORTA_IOPOL             0x1F
@@ -42,8 +40,8 @@
 #define PORTB_GPPU              0x00
 
 /* Initial values for the GPIO ports */
-#define GPIOA_INIT (1 << 7) | (1 << 6)
-#define GPIOB_INIT 1 | 1 << 5
+#define GPIOA_INIT              0
+#define GPIOB_INIT              0
 
 /* File descriptor for the I2C bus */
 static int fd;
@@ -54,14 +52,7 @@ static int status = 0;
 GPIOA_BUF_t GPIOA_buf;
 GPIOB_BUF_t GPIOB_buf;
 
-/**
- * @brief Write a byte to a register in the expander
- * @return
- * - on success: 0
- * - on partial failure: the return of the write() call.
- * - on complete failure: -1
- */
-static int exp_write(Port port, Reg reg, uint8_t val)
+int exp_write(Port port, Reg reg, uint8_t val)
 {
     if (!status) {
         printf("exp_write(): error: not initialised.\n");
@@ -81,6 +72,30 @@ static int exp_write(Port port, Reg reg, uint8_t val)
     return r;
 }
 
+uint8_t exp_read(Port port, Reg reg)
+{
+    if (!status) {
+        printf("exp_read(): error: not initialised.\n");
+        return -1;
+    }
+    uint8_t buf;
+    int addr = port + reg;
+    int r = write(fd, &addr, 1);
+    if(r == -1) {
+        printf("exp_read(): write() error: %s\n", strerror(errno));
+        return r;
+    } else if (r != 1) {
+        printf("exp_read(): write() error: %d\n", r);
+    }
+    r = read(fd, &buf, 1);
+    if (r == -1) {
+        printf("exp_read(): read() error: %s\n", strerror(errno));
+    } else if (r != 1){
+        printf("exp_read(): read() error: %d\n", r);
+    }
+    return buf;
+}
+
 int exp_init()
 {
     if (status == 1) {
@@ -97,7 +112,7 @@ int exp_init()
         printf("ioctl error: %s\n", strerror(errno));
         return -1;
     }
-    /* Change the addressing mode of the IO expander */
+    /* Configure IO expander */
     int r = exp_write(PortA, IOCON_BANK_0, IOCON_CONFIG);
     r += exp_write(PortA, IODIR, PORTA_IODIR);
     r += exp_write(PortB, IODIR, PORTB_IODIR);
@@ -106,7 +121,7 @@ int exp_init()
     r += exp_write(PortA, GPPU, PORTA_GPPU);
     r += exp_write(PortB, GPPU, PORTB_GPPU);
 
-    /* Turn off all LEDs on the LCD */
+    /* Configure the GPIO pins */
     GPIOA_buf.reg = GPIOA_INIT;
     GPIOB_buf.reg = GPIOB_INIT;
     r += GPIO_write(PortA);
@@ -137,30 +152,6 @@ int GPIO_write(Port port)
     } else {
         return exp_write(PortB, GPIO, GPIOB_buf.reg);
     }
-}
-
-uint8_t exp_read(Port port, Reg reg)
-{
-    if (!status) {
-        printf("exp_read(): error: not initialised.\n");
-        return -1;
-    }
-    uint8_t buf;
-    int addr = port + reg;
-    int r = write(fd, &addr, 1);
-    if(r == -1) {
-        printf("exp_read(): write() error: %s\n", strerror(errno));
-        return r;
-    } else if (r != 1) {
-        printf("exp_read(): write() error: %d\n", r);
-    }
-    r = read(fd, &buf, 1);
-    if (r == -1) {
-        printf("exp_read(): read() error: %s\n", strerror(errno));
-    } else if (r != 1){
-        printf("exp_read(): read() error: %d\n", r);
-    }
-    return buf;
 }
 
 uint8_t GPIO_read(Port port)

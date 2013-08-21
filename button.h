@@ -41,6 +41,7 @@ uint8_t btn_blk_raw();
 
 /**
  * @brief Print a button press to the stdout
+ * @return the return from the printf() call
  */
 int btn_printf(Button button);
 

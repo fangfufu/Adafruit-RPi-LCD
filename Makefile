@@ -1,7 +1,7 @@
 CC = arm-linux-gnueabi-gcc-4.7
 CFLAGS = -std=gnu99 -g -Wall -Wextra -O2 -pedantic
 LDFLAGS =
-SOURCES = main.c debug.c expander.c lcd.c button.c
+SOURCES = main.c debug.c gpio.c lcd.c button.c
 OBJECTS = $(SOURCES:.c=.o)
 EXECUTABLE = LCD
 
