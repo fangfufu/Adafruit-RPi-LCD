@@ -4,6 +4,7 @@
 
 #include "button.h"
 
+/** Bit mask for the GPIO buttons */
 #define BTN_MASK 0x1F
 
 /**

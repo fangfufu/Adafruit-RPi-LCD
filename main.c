@@ -5,16 +5,18 @@
 #include "gpio.h"
 #include "lcd.h"
 
+#define LCD_LENTH               16;
+#define SECOND_LINE_START       40;
+
 int main()
 {
     exp_init();
-    LCD_byte(0x02, 0);
-    LCD_byte(0x20, 0);
-    LCD_byte(0x0E, 0);
-    LCD_byte(0x06 ,0);
-    LCD_byte(0x48, 1);
-    LCD_byte(0x48, 1);
-    LCD_byte(0x48, 1);
-    //btn_printf(btn_blk());
-    //dbg_colour_check();
+    LCD_init();
+    int i = 0;
+    while(1){
+        getchar();
+        LCD_data(i + '0');
+        printf("%d\n", i);
+        i++;
+    }
 }

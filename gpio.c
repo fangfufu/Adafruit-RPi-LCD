@@ -8,7 +8,7 @@
 
 #include "gpio.h"
 
-/* Are you using Raspberry Pi Rev 1? */
+/** Set Raspberry Pi Board version */
 // #define RPI_REV1
 #ifndef RPI_REV1
 #define I2C_BUS "/dev/i2c-1"
@@ -16,39 +16,52 @@
 #define I2C_BUS "/dev/i2c-0"
 #endif
 
-/* The address for the expansion board */
+/** The address for the expansion board */
 #define I2C_ADDR                0x20
 
-/* Initial address of the IOCON register, (pg.5 of the data sheet) */
+/** Initial address of the IOCON register, (pg.5 of the datasheet) */
 #define IOCON_BANK_0            0x0A
 
-/* Set Bank = 1, so registers for ports are grouped together
- * Set SEQOP = 1 to disable sequential operation.
- * (pg 18 of the data sheet) */
+/**
+ * @brief IOCON configuration
+ * @details pg 18 of the data sheet
+ * - Set Bank = 1 to registers for ports are grouped together,
+ * - Set SEQOP = 1 to disable sequential operation.
+ */
 #define IOCON_CONFIG            (1 << 5) | (1 <<7)
 
-/* IO direction, 0 = output, 1 = input (pg. 12 of the data sheet) */
+/**
+ * @brief IO direction,
+ * @details 0 = output, 1 = input, (pg.12 of the datasheet)
+ */
 #define PORTA_IODIR             0x1F
 #define PORTB_IODIR             0x00
 
-/* Input polarity, 1 = inverse, 0 = normal (pg 13 of the data sheet) */
+/**
+ * @brief Input polarity
+ * @details 1 = inverse, 0 = normal (pg.13 of the datasheet)
+ */
 #define PORTA_IOPOL             0x1F
 #define PORTB_IOPOL             0x00
 
-/* GPIO pull-up, 1 = enabled, 0 = disabled (pg 19 of the data sheet) */
+/**
+ * @brief GPIO pull-up
+ * @details 1 = enabled, 0 = disabled (pg.19 of the datasheet)
+ */
 #define PORTA_GPPU              0x1F
 #define PORTB_GPPU              0x00
 
-/* Initial values for the GPIO ports */
+/** Initial values for the GPIO ports */
 #define GPIOA_INIT              0
 #define GPIOB_INIT              0
 
-/* File descriptor for the I2C bus */
+/** File descriptor for the I2C bus */
 static int fd;
-/* Initialisation status */
+
+/** Initialisation status */
 static int status = 0;
 
-/* buffers for the GPIO ports */
+/** Buffers for GPIO ports */
 GPIOA_BUF_t GPIOA_buf;
 GPIOB_BUF_t GPIOB_buf;
 
@@ -61,7 +74,8 @@ int exp_write(Port port, Reg reg, uint8_t val)
     uint8_t buf[2];
     buf[0] = port + reg;
     buf[1] = val;
-    int r = write(fd, buf, sizeof(buf));
+    int r;
+    r = write(fd, buf, sizeof(buf));
     if ( r == 2 ) {
         return 0;
     } else if( r == -1 ) {
@@ -81,6 +95,7 @@ uint8_t exp_read(Port port, Reg reg)
     uint8_t buf;
     int addr = port + reg;
     int r = write(fd, &addr, 1);
+
     if(r == -1) {
         printf("exp_read(): write() error: %s\n", strerror(errno));
         return r;
@@ -113,7 +128,8 @@ int exp_init()
         return -1;
     }
     /* Configure IO expander */
-    int r = exp_write(PortA, IOCON_BANK_0, IOCON_CONFIG);
+    int r;
+    r = exp_write(PortA, IOCON_BANK_0, IOCON_CONFIG);
     r += exp_write(PortA, IODIR, PORTA_IODIR);
     r += exp_write(PortB, IODIR, PORTB_IODIR);
     r += exp_write(PortA, IOPOL, PORTA_IOPOL);

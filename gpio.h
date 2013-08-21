@@ -2,7 +2,7 @@
 #define EXP_H
 
 /**
- * @file
+ * @file gpio.h
  * @brief functions related to the MCP23017 I/O expander
  * @note for GPIO related operations, please use GPIO_read() and GPIO_write(),
  * as they update the local buffer.
@@ -88,18 +88,13 @@ int exp_init();
 
 /**
  * @brief close down the I/O Expander
- * @return
- * - on success: 0
- * - on failure: the return of close()
+ * @return 0 on success
  */
 int exp_close();
 
 /**
  * @brief Write a byte to a register in the expander
- * @return
- * - on success: 0
- * - on partial failure: the return of the write() call.
- * - on complete failure: -1
+ * @return 0 on success
  */
 int exp_write(Port port, Reg reg, uint8_t val);
 
@@ -111,7 +106,7 @@ uint8_t exp_read(Port port, Reg reg);
 /**
  * @brief Write the values in the GPIO buffer to the GPIO register
  * @note GPIO buffers are GPIOA_buf and GPIOB_buf.
- * @return same as exp_write()
+ * @return 0 on success
  */
 int GPIO_write(Port port);
 
