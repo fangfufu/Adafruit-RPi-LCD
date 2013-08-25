@@ -82,9 +82,6 @@ static int g_toCGRAM = 0;
 /** DDRAM address before switching to CGRAM */
 static uint8_t g_DDRAM_addr = 0;
 
-/* Static function prototypes */
-static void busy_wait();
-
 /**
  * @brief Send a nibble to one of the LCD registers
  * @param[in] data please put the data in the lower nibble.
@@ -182,7 +179,7 @@ int write_byte(uint8_t data, int RS)
  * - 0: Select instruction register
  * - 1: Select data register
  */
-uint8_t read_byte(int RS)
+static uint8_t read_byte(int RS)
 {
     if (!g_init) {
         printf("read_byte: error: LCD is not initialised!\n");
@@ -213,26 +210,48 @@ static int DDRAM_addr_restore()
     if (g_toCGRAM != 0) {
         g_toCGRAM = 0;
         LCD_cmd(DDRAM|g_DDRAM_addr);
-        busy_wait();
     }
     return g_toCGRAM;
 }
 
-
+/**
+ * @brief LCD DDRAM self test
+ * @details Print DDRAM_LENGTH characters to DDRAM, and read them back. If they
+ * are the same, then the test is successful.
+ */
+static int self_test()
+{
+    int i;
+    int s = 0;
+    char c, d;
+    LCD_clear();
+    for (i = 0; i < DDRAM_LENGTH + 1 ; i++ ){
+        c = LCD_putchar('0' + i);
+        LCD_cursor_move(-1);
+        d = LCD_getchar();
+        if (c == d) {
+            s++;
+        }
+    }
+    if (s == DDRAM_LENGTH) {
+        LCD_clear();
+        return 0;
+    }
+    return -1;
+}
 
 int LCD_init()
 {
-    int r;
     if (g_init == 1) {
         printf("LCD_init: LCD is already initialised.\n");
         return 0;
     }
     g_init = 1;
-    r  = LCD_cmd(FOUR_BIT_MODE);
-    r += LCD_cmd(FUNCTION_SET);
-    r += LCD_cmd(DISPLAY_SET | DISPLAY_ON | CURSOR_ON | CURSOR_BLINK_ON);
-    r += LCD_cmd(ENTRY_MODE_SET|INCREMENT);
-    r += LCD_clear();
+    LCD_cmd(FOUR_BIT_MODE);
+    LCD_cmd(FUNCTION_SET);
+    LCD_cmd(DISPLAY_SET | DISPLAY_ON | CURSOR_ON | CURSOR_BLINK_ON);
+    LCD_cmd(ENTRY_MODE_SET|INCREMENT);
+    int r = self_test();
     if (r == 0){
         return r;
     }
@@ -256,7 +275,28 @@ int LCD_putchar (char c)
             return LCD_cmd(DDRAM | ((LCD_cursor_addr() > 0x27) ? 0x00 : 0x40));
             break;
     }
-    return write_byte(c, 1);
+    if (write_byte(c, 1) != 0) {
+        return EOF;
+    }
+    return (unsigned char) c;
+}
+
+/**
+ * @brief read the character in DDRAM
+ */
+char LCD_getchar()
+{
+    DDRAM_addr_restore();
+    char c = read_byte(1);
+    busy_wait();
+    return c;
+}
+
+uint8_t LCD_cursor_addr()
+{
+    DDRAM_addr_restore();
+    g_DDRAM_addr = read_byte(0);
+    return g_DDRAM_addr;
 }
 
 int LCD_clear()
@@ -270,17 +310,8 @@ int LCD_clear()
 int LCD_home()
 {
     int r = LCD_cmd(HOME);
-    busy_wait();
     LCD_DISPLAY_SHIFT = 0;
     return r;
-}
-
-uint8_t LCD_cursor_addr()
-{
-    busy_wait();
-    DDRAM_addr_restore();
-    g_DDRAM_addr = read_byte(0);
-    return g_DDRAM_addr;
 }
 
 int LCD_line_clear()

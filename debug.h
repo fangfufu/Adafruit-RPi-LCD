@@ -25,15 +25,4 @@ void dbg_led_status();
  */
 void dbg_print_clk();
 
-/**
- * @brief print RW_TEST_LENGTH characters to the LCD
- */
-void LCD_write_test();
-
-/**
- * @brief read RW_TEST_LENGTH characters back from LCD
- * @details RW_TEST_LENGTH is defined in debug.c
- */
-void LCD_read_test();
-
 #endif

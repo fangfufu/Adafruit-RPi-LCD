@@ -46,7 +46,7 @@ extern int LCD_DISPLAY_SHIFT;
 
 /**
  * @brief Initialise the LCD screen
- * @return 0, on success
+ * @return 0, on success; -1 on error.
  */
 int LCD_init();
 
@@ -63,12 +63,15 @@ int LCD_cmd(uint8_t cmd);
 
 /**
  * @brief Send a character to the LCD screen.
- * @return
- * - 0, on success
- * - -1 when LCD has not been initialised
+ * @return the character written as an unsigned char cast to an int or
+ * EOF on error
  */
 int LCD_putchar (char c);
 
+/**
+ * @brief read the character in DDRAM
+ */
+char LCD_getchar();
 
 /**
  * @brief change LCD colour
@@ -134,7 +137,6 @@ int LCD_cursor_move(int n);
 int LCD_display_shift(int n);
 
 /* Temporarily included */
-uint8_t read_byte(int RS);
 int write_byte(uint8_t data, int RS);
 
 #endif
