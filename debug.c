@@ -3,6 +3,9 @@
 
 #include "gpio.h"
 #include "lcd.h"
+#include "button.h"
+
+#define RW_TEST_LENGTH  80
 
 void dbg_print_ports()
 {
@@ -49,4 +52,28 @@ void dbg_led_status()
            GPIOA_buf.reg,
            GPIOB_buf.reg
     );
+}
+
+void dbg_print_clk()
+{
+    btn_printf(btn_return_clk());
+}
+
+void LCD_write_test()
+{
+    char string[RW_TEST_LENGTH + 1];
+    for (int i = 0; i < RW_TEST_LENGTH; i++){
+        string[i] = (i + '0');
+    }
+    string[RW_TEST_LENGTH] = '\0';
+    printf("printed: %d\n", LCD_printf("%s", string));
+}
+
+void LCD_read_test()
+{
+    LCD_home();
+    for (int i = 0; i < RW_TEST_LENGTH; i++) {
+        printf("%c", read_byte(1));
+    }
+    putchar('\n');
 }

@@ -22,6 +22,17 @@
 /** Initial address of the IOCON register, (pg.5 of the datasheet) */
 #define IOCON_BANK_0            0x0A
 
+/**      Address for IO Direction Register            */
+#define IODIR                   0x00
+/**      Address for Input Polarity Register          */
+#define IOPOL                   0x01
+/**      Address for General Configuration Register   */
+#define IOCON                   0x05
+/**      Address for Pull-up  Register                */
+#define GPPU                    0x06
+/**      Address for GPIO Register                    */
+#define GPIO                    0x09
+
 /**
  * @brief IOCON configuration
  * @details pg 18 of the data sheet
@@ -59,16 +70,20 @@
 static int fd;
 
 /** Initialisation status */
-static int status = 0;
+static int g_init = 0;
 
 /** Buffers for GPIO ports */
 GPIOA_BUF_t GPIOA_buf;
 GPIOB_BUF_t GPIOB_buf;
 
-int exp_write(Port port, Reg reg, uint8_t val)
+/**
+ * @brief Write a byte to a register in the expander
+ * @return 0, on success
+ */
+static int exp_write(Port port, uint8_t reg, uint8_t val)
 {
-    if (!status) {
-        printf("exp_write(): error: not initialised.\n");
+    if (!g_init) {
+        printf("exp_write: error: is not initialised.\n");
         return -1;
     }
     uint8_t buf[2];
@@ -79,17 +94,20 @@ int exp_write(Port port, Reg reg, uint8_t val)
     if ( r == 2 ) {
         return 0;
     } else if( r == -1 ) {
-        printf("exp_write(): write() error: %s\n", strerror(errno));
+        printf("exp_write: write() error: %s\n", strerror(errno));
     } else {
-        printf("exp_write(): write() error: %d\n", r);
+        printf("exp_write: write() error: %d\n", r);
     }
     return r;
 }
 
-uint8_t exp_read(Port port, Reg reg)
+/**
+ * @brief Read a single byte from a register
+ */
+static uint8_t exp_read(Port port, uint8_t reg)
 {
-    if (!status) {
-        printf("exp_read(): error: not initialised.\n");
+    if (!g_init) {
+        printf("exp_read: error: is not initialised.\n");
         return -1;
     }
     uint8_t buf;
@@ -97,41 +115,41 @@ uint8_t exp_read(Port port, Reg reg)
     int r = write(fd, &addr, 1);
 
     if(r == -1) {
-        printf("exp_read(): write() error: %s\n", strerror(errno));
+        printf("exp_read: write error: %s\n", strerror(errno));
         return r;
     } else if (r != 1) {
-        printf("exp_read(): write() error: %d\n", r);
+        printf("exp_read: write error: %d\n", r);
     }
     r = read(fd, &buf, 1);
     if (r == -1) {
-        printf("exp_read(): read() error: %s\n", strerror(errno));
+        printf("exp_read: read error: %s\n", strerror(errno));
     } else if (r != 1){
-        printf("exp_read(): read() error: %d\n", r);
+        printf("exp_read: read error: %d\n", r);
     }
     return buf;
 }
 
-int exp_init()
+int GPIO_open()
 {
-    if (status == 1) {
-        printf("I/O expander already initialised.\n");
+    if (g_init == 1) {
+        printf("GPIO_open: I/O expander is already initialised.\n");
         return 0;
     }
-    status = 1;
+    g_init = 1;
     fd = open(I2C_BUS, O_RDWR);
     if (fd == -1) {
-        printf("open error: %s\n", strerror(errno));
+        printf("GPIO_open: open error: %s\n", strerror(errno));
         return -1;
     }
     if (ioctl(fd, I2C_SLAVE, I2C_ADDR) == -1) {
-        printf("ioctl error: %s\n", strerror(errno));
+        printf("GPIO_open: ioctl error: %s\n", strerror(errno));
         return -1;
     }
     /* Configure IO expander */
     int r;
     r = exp_write(PortA, IOCON_BANK_0, IOCON_CONFIG);
-    r += exp_write(PortA, IODIR, PORTA_IODIR);
-    r += exp_write(PortB, IODIR, PORTB_IODIR);
+    r += GPIO_direction(PortA, PORTA_IODIR);
+    r += GPIO_direction(PortB, PORTB_IODIR);
     r += exp_write(PortA, IOPOL, PORTA_IOPOL);
     r += exp_write(PortB, IOPOL, PORTB_IOPOL);
     r += exp_write(PortA, GPPU, PORTA_GPPU);
@@ -145,20 +163,29 @@ int exp_init()
     if (r == 0) {
         return r;
     }
-    status = 0;
-    printf("I/O expander initialisation Error: %d\n", r);
+    g_init = 0;
+    printf("GPIO_open: I/O expander initialisation Error: %d\n", r);
     return r;
 }
 
-int exp_close()
+int GPIO_close()
 {
     int t = close(fd);
     if (t == 0) {
-        fd = status = 0;
+        fd = g_init = 0;
     } else {
-        printf("I/O expander close down error: %s\n",strerror(errno));
+        printf("GPIO_close: I/O expander close down error: %s\n",strerror(errno));
     }
     return t;
+}
+
+int GPIO_direction(Port port, uint8_t polarity)
+{
+    if (port == PortA) {
+        return exp_write(PortA, IODIR, polarity);
+    } else {
+        return exp_write(PortB, IODIR, polarity);
+    }
 }
 
 int GPIO_write(Port port)

@@ -1,49 +1,61 @@
 /**
  * @file lcd.c
- * @note The LCD instruction are defined in pg. 24 of the data sheet.
+ * @details
+ * - The data pins for the LCD are connected in the reverse order on the
+ * I/O expander. Hence we need to manually map pins.
+ * - the send/receive nibble commands might cause misalignment in command
+ * sequences. Please use them with caution.
  */
+#include <stdarg.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "gpio.h"
 
 #include "lcd.h"
 
-/** Clear display                       */
+/* Opcode definitions - pg.24 of the datasheet          */
+
+/** Special initialisation code for 4-bit mode          */
+#define FOUR_BIT_MODE           0x02
+
+/** Clear display                                       */
 #define CLEAR                   0x01
 
-/** Return home                         */
+/** Return home                                         */
 #define HOME                    0x02
-
-/** Entry mode set                      */
-#define ENTRY_SET               0x04
-#define INCREMENT               0x02
-#define DECREMENT               0x00
-#define SHIFT_DISPLAY           0x01
-
-/** Display on/off control              */
-#define DISPLAY_SET             0x08
-#define DISPLAY_ON              0x04
-#define CURSOR_ON               0x02
-#define CURSOR_BLINK_ON         0x01
-
-/** Cursor or display shift             */
-#define SHIFT                   0x10
-#define DISPLAY                 0x08
-#define CURSOR                  0x00
-#define RIGHT                   0x04
-#define LEFT                    0x00
 
 /**
  * @brief Function set
- * @details pg.24 of the datasheet
+ * @details
  * - Interface length = 4 bits,
  * - Display lines = 2,
- * - Character font = 5 x 10 dots (seems to make no difference)
+ * - Character font = 5 x 8 dots (seems to make no difference)
  */
-#define FUNCTION_SET            0x2C
+#define FUNCTION_SET            0x28
 
-/** Special initialisation code for 4-bit mode */
-#define FOUR_BIT_MODE           0x02
+/** Set Character Generation RAM (CGRAM) address
+ */
+#define CGRAM                   0x40
+
+/** Set Display Data RAM (DDRAM) address                */
+#define DDRAM                   0x80
+
+/* Other bits and pieces                                */
+
+/** The number of characters on each line of the LCD    */
+#define LCD_LENGTH         16
+
+/** The number of characters DDRAM can store            */
+#define DDRAM_LENGTH        80
+
+/** GPIO Port B polarity for read                       */
+#define LCD_READ                0x1E
+/** GPIO Port B polarity for write                      */
+#define LCD_WRITE               0x00
+
+/** Busy Flag -- DB7 pin                                */
+#define BUSY_FLAG               0x80
 
 typedef union {
     uint8_t byte;
@@ -59,42 +71,50 @@ typedef union {
     } bit;
 } Byte;
 
+int LCD_DISPLAY_SHIFT = 0;
+
+/** LCD initialisation status flag */
+static int g_init = 0;
+
+/** Flag for indicating that the address register is pointed to CGRAM */
+static int g_toCGRAM = 0;
+
+/** DDRAM address before switching to CGRAM */
+static uint8_t g_DDRAM_addr = 0;
+
+/* Static function prototypes */
+static void busy_wait();
+
 /**
- * @brief Primitive LCD send command
- * @details This function does two things:
- * - send command down the LCD,
- * - switch the E pin.
+ * @brief Send a nibble to one of the LCD registers
  * @param[in] data please put the data in the lower nibble.
  * @param[in] RS
  * - 0: Select instruction register
  * - 1: Select data register
- * @return
- * - on success: 0
- * - on error: accumulated error from the GPIO_write() call.
- * @note
- * - The data pins for the LCD are connected in the reverse order on the
- * I/O expander. Hence we need to manually map pins.
- * - Removed from the header file because calling this function randomly might
- * cause misalignment in the command sequence, so you can't send stuff to the
- * LCD again once you exit the program. Please call LCD_byte() instead, and
- * fill the first nibble with 0s.
+ * @return 0, on success
+ * @warning: This function DOES NOT change the GPIO direction, so it should
+ * not be called on its own.
  */
-static int LCD_nibble(uint8_t data, int RS)
+static int write_nibble(uint8_t data, int RS)
 {
+
+    int r;
     Byte b;
+
     b.byte = data;
-    /* Control pins */
+    /* Set control pins */
     GPIOB_buf.pin.RS = RS;
     GPIOB_buf.pin.R = 0;
-    GPIOB_buf.pin.E = 1;
-    /* Data pins */
+
+    /* Set data pins */
     GPIOB_buf.pin.DB7 = b.bit._3;
     GPIOB_buf.pin.DB6 = b.bit._2;
     GPIOB_buf.pin.DB5 = b.bit._1;
     GPIOB_buf.pin.DB4 = b.bit._0;
-    /* The actual sending sequence. Note that data is clocked in at the
-    lowering edge of the E pin. */
-    int r;
+
+    /* Flip the E-pin.                                          */
+    /* Note that data is clocked in at the lowering edge.       */
+    GPIOB_buf.pin.E = 1;
     r = GPIO_write(PortB);
     GPIOB_buf.pin.E = 0;
     r += GPIO_write(PortB);
@@ -102,39 +122,245 @@ static int LCD_nibble(uint8_t data, int RS)
 }
 
 /**
+ * @brief read a nibble from one of the LCD registers
+ * @param[in] RS
+ * - 0: Select instruction register
+ * - 1: Select data register
+ * @return the data will be in the lower nibble.
+ * @note please refer to the timing diagram at pg. 22
+ */
+static uint8_t read_nibble(int RS)
+{
+    Byte b;
+    b.byte = 0;
+
+    /* Set control pins */
+    GPIOB_buf.pin.RS = RS;
+    GPIOB_buf.pin.R = 1;
+
+    /* Flip the E-pin.                                          */
+    /* Note that data is clocked in at the rising edge.         */
+    GPIOB_buf.pin.E = 0;
+    GPIO_write(PortB);
+    GPIOB_buf.pin.E = 1;
+    GPIO_write(PortB);
+
+    /* The actual read operation */
+    GPIO_read(PortB);
+
+    /* Copy back the data */
+    b.bit._3 = GPIOB_buf.pin.DB7;
+    b.bit._2 = GPIOB_buf.pin.DB6;
+    b.bit._1 = GPIOB_buf.pin.DB5;
+    b.bit._0 = GPIOB_buf.pin.DB4;
+    return b.byte;
+}
+
+/**
  * @brief Send a byte to the LCD screen
- * @details This function calls send_nibble() twice.
+ * @details This function calls write_nibble twice.
  * @return
  * - on success: 0
- * - on error: accumulated error from the send_nibble() call.
+ * - on error: accumulated error from the write_nibble call.
  */
-static int LCD_byte(uint8_t data, int RS)
+int write_byte(uint8_t data, int RS)
+{
+    if (!g_init) {
+        printf("write_byte: error: LCD is not initialised!\n");
+        return -1;
+    }
+    int r;
+    r =  GPIO_direction(PortB, LCD_WRITE);
+    r += write_nibble (data >> 4, RS);
+    r += write_nibble(data, RS);
+    return r;
+}
+
+/**
+ * @brief read a byte from one of the LCD registers
+ * @param[in] RS
+ * - 0: Select instruction register
+ * - 1: Select data register
+ */
+uint8_t read_byte(int RS)
+{
+    if (!g_init) {
+        printf("read_byte: error: LCD is not initialised!\n");
+        return -1;
+    }
+    uint8_t r;
+    GPIO_direction(PortB, LCD_READ);
+    r  = read_nibble(RS) << 4;
+    r |= read_nibble(RS);
+    return r;
+}
+
+/**
+ * @brief Poll LCD until it is no longer busy
+ */
+static void busy_wait()
+{
+    while (read_byte(0) & BUSY_FLAG)
+        ;
+}
+
+/**
+ * @brief restore DDRAM address
+ * @return 0, if the address counter is now point to DDRAM.
+ */
+static int DDRAM_addr_restore()
+{
+    if (g_toCGRAM != 0) {
+        g_toCGRAM = 0;
+        LCD_cmd(DDRAM|g_DDRAM_addr);
+        busy_wait();
+    }
+    return g_toCGRAM;
+}
+
+
+
+int LCD_init()
 {
     int r;
-    r = LCD_nibble (data >> 4, RS);
-    r += LCD_nibble(data, RS);
+    if (g_init == 1) {
+        printf("LCD_init: LCD is already initialised.\n");
+        return 0;
+    }
+    g_init = 1;
+    r  = LCD_cmd(FOUR_BIT_MODE);
+    r += LCD_cmd(FUNCTION_SET);
+    r += LCD_cmd(DISPLAY_SET | DISPLAY_ON | CURSOR_ON | CURSOR_BLINK_ON);
+    r += LCD_cmd(ENTRY_MODE_SET|INCREMENT);
+    r += LCD_clear();
+    if (r == 0){
+        return r;
+    }
+    g_init = 0;
+    printf("LCD_init: LCD initialisation failed\n");
     return r;
 }
 
 int LCD_cmd(uint8_t cmd)
 {
-    return LCD_byte(cmd, 0);
+    return write_byte(cmd, 0);
 }
 
-int LCD_data(uint8_t data)
+int LCD_putchar (char c)
 {
-    return LCD_byte(data, 1);
+    switch(c) {
+        case '\r':
+            return LCD_cmd(DDRAM | ((LCD_cursor_addr() < 0x27) ? 0x00 : 0x40));
+            break;
+        case '\n':
+            return LCD_cmd(DDRAM | ((LCD_cursor_addr() > 0x27) ? 0x00 : 0x40));
+            break;
+    }
+    return write_byte(c, 1);
 }
 
-int LCD_init()
+int LCD_clear()
 {
-    int r;
-    r  = LCD_cmd(FOUR_BIT_MODE);
-    r += LCD_cmd(FUNCTION_SET);
-    r += LCD_cmd(DISPLAY_SET | DISPLAY_ON | CURSOR_ON | CURSOR_BLINK_ON);
-    r += LCD_cmd(ENTRY_SET|INCREMENT);
-    r += LCD_cmd(CLEAR);
+    int r = LCD_cmd(CLEAR);
+    busy_wait();
+    LCD_DISPLAY_SHIFT = 0;
     return r;
+}
+
+int LCD_home()
+{
+    int r = LCD_cmd(HOME);
+    busy_wait();
+    LCD_DISPLAY_SHIFT = 0;
+    return r;
+}
+
+uint8_t LCD_cursor_addr()
+{
+    busy_wait();
+    DDRAM_addr_restore();
+    g_DDRAM_addr = read_byte(0);
+    return g_DDRAM_addr;
+}
+
+int LCD_line_clear()
+{
+    int r = LCD_putchar('\r');
+    for (int i =0; i < LCD_LENGTH; i++){
+        r += LCD_putchar(' ');
+    }
+    r += LCD_putchar('\r');
+    return r;
+}
+
+int LCD_printf(const char *format, ...)
+{
+    va_list arg;
+    char s[DDRAM_LENGTH + 1];
+
+    va_start(arg, format);
+    int n = vsnprintf(s, DDRAM_LENGTH + 1, format, arg);
+    va_end(arg);
+
+    for (int i = 0; s[i] != '\0'; i++){
+        LCD_putchar(s[i]);
+    }
+
+    return n;
+}
+
+int LCD_wrap_printf(const char *format, ...)
+{
+    LCD_clear();
+
+    va_list arg;
+    char s[2 * LCD_LENGTH + 1];
+
+    va_start(arg, format);
+    int n = vsnprintf(s, 2 * LCD_LENGTH + 1, format, arg);
+    va_end(arg);
+
+    for (int i = 0; s[i] != '\0'; i++){
+        if (i == LCD_LENGTH) {
+            LCD_putchar('\n');
+        }
+        LCD_putchar(s[i]);
+    }
+
+    return n;
+}
+
+int LCD_cursor_move(int n)
+{
+    int i;
+    if (n > 0){
+        for (i = 0; i < n; i++) {
+            LCD_cmd(SHIFT|CURSOR|RIGHT);
+        }
+    } else {
+        for (i = 0; i > n; i--) {
+            LCD_cmd(SHIFT|CURSOR|LEFT);
+        }
+    }
+    return LCD_cursor_addr();
+}
+
+int LCD_display_shift(int n)
+{
+    int i = 0;
+    if (n > 0){
+        for (i = 0; i < n; i++) {
+            LCD_cmd(SHIFT|DISPLAY|RIGHT);
+            LCD_DISPLAY_SHIFT++;
+        }
+    } else {
+        for (i = 0; i > n; i--) {
+            LCD_cmd(SHIFT|DISPLAY|LEFT);
+            LCD_DISPLAY_SHIFT--;
+        }
+    }
+    LCD_DISPLAY_SHIFT %= 40;
+    return LCD_DISPLAY_SHIFT;
 }
 
 /**
@@ -192,6 +418,6 @@ int LCD_colour(Colour colour)
     if (r == 0) {
         return r;
     }
-    printf("Colour change error: %d\n", r);
+    printf("LCD_colour: Colour change error: %d\n", r);
     return r;
 }

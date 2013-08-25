@@ -3,7 +3,7 @@ CFLAGS = -std=gnu99 -g -Wall -Wextra -O2 -pedantic
 LDFLAGS =
 SOURCES = main.c debug.c gpio.c lcd.c button.c
 OBJECTS = $(SOURCES:.c=.o)
-EXECUTABLE = LCD
+EXECUTABLE = lcd
 
 all: $(SOURCES) $(EXECUTABLE)
 

@@ -4,7 +4,7 @@
 /**
  * @file gpio.h
  * @brief functions related to the MCP23017 I/O expander
- * @note for GPIO related operations, please use GPIO_read() and GPIO_write(),
+ * @note for GPIO related operations, please use GPIO_read and GPIO_write,
  * as they update the local buffer.
  */
 
@@ -18,16 +18,7 @@ typedef enum {
     PortB = 0x10        /**<      Expander Port B         */
 } Port;
 
-/**
- * @brief GPIO Register Enumeration
- */
-typedef enum {
-    IODIR = 0x00,       /**<      IO Direction Register            */
-    IOPOL = 0x01,       /**<      Input Polarity Register          */
-    IOCON = 0x05,       /**<      General Configuration Register   */
-    GPPU  = 0x06,       /**<      Pull-up  Register                */
-    GPIO  = 0x09        /**<      GPIO Register                    */
-} Reg;
+
 
 /**
  * @brief GPIO A buffer type definition
@@ -82,31 +73,26 @@ extern GPIOB_BUF_t GPIOB_buf;
  * @return
  * - on success: 0
  * - on partial failure: the number of bytes sent to the expander
- * - on failure related to open()/ioctl(): -1
+ * - on failure related to open/ioctl: -1
  */
-int exp_init();
+int GPIO_open();
 
 /**
  * @brief close down the I/O Expander
- * @return 0 on success
+ * @return 0, on success
  */
-int exp_close();
+int GPIO_close();
 
 /**
- * @brief Write a byte to a register in the expander
- * @return 0 on success
+ * @brief change GPIO port polarity
+ * @return 0, on success
  */
-int exp_write(Port port, Reg reg, uint8_t val);
-
-/**
- * @brief Read a single byte from a register
- */
-uint8_t exp_read(Port port, Reg reg);
+int GPIO_direction(Port port, uint8_t polarity);
 
 /**
  * @brief Write the values in the GPIO buffer to the GPIO register
  * @note GPIO buffers are GPIOA_buf and GPIOB_buf.
- * @return 0 on success
+ * @return 0, on success
  */
 int GPIO_write(Port port);
 

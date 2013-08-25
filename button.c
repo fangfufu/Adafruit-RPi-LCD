@@ -51,6 +51,16 @@ Button btn_blk()
     return raw_to_button(btn_blk_raw());
 }
 
+Button btn_return_clk()
+{
+    uint8_t buf;
+    while( (buf = btn_nblk_raw()) == 0 )
+        ;
+    while( btn_nblk_raw() != 0 )
+        ;
+    return buf;
+}
+
 int btn_printf(Button button)
 {
     switch(button) {

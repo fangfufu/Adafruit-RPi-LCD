@@ -5,18 +5,20 @@
 #include "gpio.h"
 #include "lcd.h"
 
-#define LCD_LENTH               16;
-#define SECOND_LINE_START       40;
+void test()
+{
+    LCD_write_test();
+    LCD_read_test();
+}
 
 int main()
 {
-    exp_init();
+    GPIO_open();
     LCD_init();
-    int i = 0;
     while(1){
         getchar();
-        LCD_data(i + '0');
-        printf("%d\n", i);
-        i++;
+        LCD_putchar('A');
+        getchar();
+        printf("%c", read_byte(1));
     }
 }
