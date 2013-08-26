@@ -90,7 +90,7 @@ uint8_t LL_read_nibble(int RS)
 int LL_write_byte(uint8_t data, int RS)
 {
     if (!LL_init) {
-        printf("LL_write_byte: error: LCD is not initialised!\n");
+        printf("LL_write_byte error: LCD is not initialised!\n");
         return -1;
     }
     int r;
@@ -103,7 +103,7 @@ int LL_write_byte(uint8_t data, int RS)
 uint8_t LL_read_byte(int RS)
 {
     if (!LL_init) {
-        printf("LL_read_byte: error: LCD is not initialised!\n");
+        printf("LL_read_byte error: LCD is not initialised!\n");
         return -1;
     }
     uint8_t r;

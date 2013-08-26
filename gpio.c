@@ -83,7 +83,7 @@ GPIOB_BUF_t GPIOB_buf;
 static int exp_write(Port port, uint8_t reg, uint8_t val)
 {
     if (!g_init) {
-        printf("exp_write: error: is not initialised.\n");
+        printf("exp_write error: is not initialised.\n");
         return -1;
     }
     uint8_t buf[2];
@@ -94,9 +94,9 @@ static int exp_write(Port port, uint8_t reg, uint8_t val)
     if ( r == 2 ) {
         return 0;
     } else if( r == -1 ) {
-        printf("exp_write: write error: %s\n", strerror(errno));
+        printf("exp_write error: %s\n", strerror(errno));
     } else {
-        printf("exp_write: write error: %d\n", r);
+        printf("exp_write error: %d\n", r);
     }
     return r;
 }
@@ -107,7 +107,7 @@ static int exp_write(Port port, uint8_t reg, uint8_t val)
 static uint8_t exp_read(Port port, uint8_t reg)
 {
     if (!g_init) {
-        printf("exp_read: error: is not initialised.\n");
+        printf("exp_read error: GPIO not initialised.\n");
         return -1;
     }
     uint8_t buf;
@@ -138,7 +138,7 @@ int GPIO_open()
     g_init = 1;
     fd = open(I2C_BUS, O_RDWR);
     if (fd == -1) {
-        printf("GPIO_open: open error: %s\n", strerror(errno));
+        printf("GPIO_open error: %s\n", strerror(errno));
         return -1;
     }
     if (ioctl(fd, I2C_SLAVE, I2C_ADDR) == -1) {
@@ -164,7 +164,7 @@ int GPIO_open()
         return r;
     }
     g_init = 0;
-    printf("GPIO_open: I/O expander initialisation Error: %d\n", r);
+    printf("GPIO_open: initialisation Error: %d\n", r);
     return r;
 }
 
@@ -174,7 +174,7 @@ int GPIO_close()
     if (t == 0) {
         fd = g_init = 0;
     } else {
-        printf("GPIO_close: I/O expander close down error: %s\n",strerror(errno));
+        printf("GPIO_close error: %s\n",strerror(errno));
     }
     return t;
 }

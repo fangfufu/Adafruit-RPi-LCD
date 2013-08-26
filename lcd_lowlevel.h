@@ -40,7 +40,6 @@ uint8_t LL_read_nibble(int RS);
  * @details This function calls LL_write_nibble twice.
  * @return
  * - on success: 0
- * - on error: accumulated error from the LL_write_nibble call.
  */
 int LL_write_byte(uint8_t data, int RS);
 

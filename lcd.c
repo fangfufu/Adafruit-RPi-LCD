@@ -173,39 +173,41 @@ int LCD_line_clear()
 
 int LCD_printf(const char *format, ...)
 {
+    int i = 0;
     va_list arg;
     char s[DDRAM_LENGTH + 1];
 
     va_start(arg, format);
-    int n = vsnprintf(s, DDRAM_LENGTH + 1, format, arg);
+    vsnprintf(s, DDRAM_LENGTH + 1, format, arg);
     va_end(arg);
 
-    for (int i = 0; s[i] != '\0'; i++){
+    for (i = 0; s[i] != '\0'; i++){
         LCD_putchar(s[i]);
     }
 
-    return n;
+    return i;
 }
 
 int LCD_wrap_printf(const char *format, ...)
 {
     LCD_clear();
 
+    int i;
     va_list arg;
     char s[2 * LCD_LENGTH + 1];
 
     va_start(arg, format);
-    int n = vsnprintf(s, 2 * LCD_LENGTH + 1, format, arg);
+    vsnprintf(s, 2 * LCD_LENGTH + 1, format, arg);
     va_end(arg);
 
-    for (int i = 0; s[i] != '\0'; i++){
+    for (i = 0; s[i] != '\0'; i++){
         if (i == LCD_LENGTH) {
             LCD_putchar('\n');
         }
         LCD_putchar(s[i]);
     }
 
-    return n;
+    return i;
 }
 
 int LCD_cursor_move(int n)
