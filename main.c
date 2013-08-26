@@ -21,7 +21,14 @@ int main()
     data[6] = 0x11;
     data[7] = 0x1F;
 
+    uint8_t output[8];
     CGRAM_write_character(0, data);
+    CGRAM_read_character(0, output);
+
+    for (int i = 0; i < 8; i++){
+        printf("%x\n", output[i]);
+    }
+
     while(1){
         getchar();
         LCD_putchar(0);

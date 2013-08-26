@@ -78,6 +78,7 @@ int CGRAM_read_character(int n, uint8_t data[8])
     for (int i = 0; i < 8; i++){
         data[i] = LL_read_byte(1);
     }
+    LL_busy_wait();
     r += DDRAM_addr_restore();
     if (r != 0) {
         printf("CGRAM_read_character error.\n");
