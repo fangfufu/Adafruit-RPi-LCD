@@ -7,6 +7,9 @@
  * call. You shouldn't need to include this header file in your project.
  */
 
+/** Set Display Data RAM (DDRAM) address                */
+#define DDRAM                   0x80
+
 /** LCD initialisation status flag */
 extern int LL_init;
 

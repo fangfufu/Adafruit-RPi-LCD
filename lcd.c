@@ -1,5 +1,3 @@
-
-
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -24,24 +22,33 @@
  * @details
  * - Interface length = 4 bits,
  * - Display lines = 2,
- * - Character font = 5 x 8 dots (seems to make no difference)
+ * - Character font = 5 x 8 dots
  */
 #define FUNCTION_SET            0x28
 
-/** Set Character Generation RAM (CGRAM) address
- */
-#define CGRAM                   0x40
-
-/** Set Display Data RAM (DDRAM) address                */
-#define DDRAM                   0x80
+/** Cursor or display shift                             */
+#define SHIFT                   0x10
+#define DISPLAY                 0x08
+#define CURSOR                  0x00
+#define RIGHT                   0x04
+#define LEFT                    0x00
 
 /* Other bits and pieces                                */
 
 /** The number of characters on each line of the LCD    */
-#define LCD_LENGTH         16
+#define LCD_LENGTH              16
 
 /** The number of characters DDRAM can store            */
-#define DDRAM_LENGTH        80
+#define DDRAM_LENGTH            80
+
+/** The start of the first row in DDRAM         */
+#define DDRAM_1ST_ROW_START     0x00
+
+/** The last address in the first row of DDRAM. */
+#define DDRAM_1ST_ROW_END       0x27
+
+/** The start of the second row in DDRAM        */
+#define DDRAM_2ND_ROW_START     0x40
 
 int LCD_DISPLAY_SHIFT = 0;
 
@@ -98,13 +105,22 @@ int LCD_cmd(uint8_t cmd)
 
 int LCD_putchar (char c)
 {
+    uint8_t addr;
     switch(c) {
         case '\r':
-            return LCD_cmd(DDRAM | ((LCD_cursor_addr() < 0x27) ? 0x00 : 0x40));
-            break;
+            if (LCD_cursor_addr() < DDRAM_1ST_ROW_END){
+                addr = DDRAM_2ND_ROW_START;
+            } else {
+                addr = DDRAM_2ND_ROW_START;
+            }
+            return LCD_cmd(DDRAM | addr);
         case '\n':
-            return LCD_cmd(DDRAM | ((LCD_cursor_addr() > 0x27) ? 0x00 : 0x40));
-            break;
+            if (LCD_cursor_addr() > DDRAM_1ST_ROW_END){
+                addr = DDRAM_2ND_ROW_START;
+            } else {
+                addr = DDRAM_2ND_ROW_START;
+            }
+            return LCD_cmd(DDRAM | addr);
     }
     if (LL_write_byte(c, 1) != 0) {
         return EOF;
@@ -118,6 +134,7 @@ char LCD_getchar()
     LL_busy_wait();
     return c;
 }
+
 /**
  * @note This function in fact returns the content of the LCD address counter,
  * which could actually point to CGRAM. However all CGRAM related functions
@@ -206,6 +223,42 @@ int LCD_cursor_move(int n)
     return LCD_cursor_addr();
 }
 
+/**
+ * @brief move the LCD cursor to a certain location on LCD.
+ * @param[in] line the new line number
+ * @param[in] n the new character number
+ * @return the new cursor address
+ */
+int LCD_cursor_goto(int line, int n)
+{
+    int r = 0;
+    uint8_t addr = 0;
+    if (n > DDRAM_LENGTH / 2 - 1) {
+        printf("LCD_cursor_goto error: invalid character number detected.\n");
+        return -1;
+    }
+    if (line > 2) {
+        printf("LCD_cursor_goto error: invalid line number detected.\n");
+        return -1;
+    }
+    if (line == 1) {
+        addr = DDRAM_2ND_ROW_START;
+    }
+
+    if (n > LCD_LENGTH - 1) {
+        r = 1;
+    }
+    addr += n;
+
+    LCD_cmd(DDRAM | addr);
+
+    if(LCD_cursor_addr() == addr) {
+        return r;
+    }
+    printf("LCD_cursor_goto error: the resulting address is inconsistent.\n");
+    return -1;
+}
+
 int LCD_display_shift(int n)
 {
     int i = 0;
@@ -224,12 +277,10 @@ int LCD_display_shift(int n)
     return LCD_DISPLAY_SHIFT;
 }
 
-/**
- * @note For the LEDs on the LCD display, logic value '1' actually turns them
- * off, whereas logic value '0' turns them on.
- */
 int LCD_colour(Colour colour)
 {
+    /* Note that logic value '1' actually turns the LEDs off,
+     * and logic value '0' turns them on.               */
     switch(colour) {
         case Black:
             GPIOA_buf.pin.RED = 1;

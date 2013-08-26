@@ -5,8 +5,6 @@
 #include "lcd.h"
 #include "button.h"
 
-#define RW_TEST_LENGTH  80
-
 void dbg_print_ports()
 {
     printf("Port A %x\tPort B: %x\n",

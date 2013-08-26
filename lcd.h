@@ -20,13 +20,6 @@
 #define CURSOR_ON               0x02
 #define CURSOR_BLINK_ON         0x01
 
-/** Cursor or display shift                             */
-#define SHIFT                   0x10
-#define DISPLAY                 0x08
-#define CURSOR                  0x00
-#define RIGHT                   0x04
-#define LEFT                    0x00
-
 /**
  * @brief The colours available on the LCD
  */
@@ -128,6 +121,19 @@ int LCD_wrap_printf(const char *format, ...);
  * @return the resulting cursor address.
  */
 int LCD_cursor_move(int n);
+
+/**
+ * @brief move the LCD cursor to a certain position on LCD.
+ * @param[in] line the new line number
+ * @param[in] n the new character number, c must be:
+ * - smaller than 15, for the new cursor position to be within the display
+ * - smaller than 39, for it to be valid.
+ * @return
+ * - 0, if the cursor new cursor location is in the LCD display
+ * - 1, if the it is outside LCD display
+ * - -1 if the move failed
+ */
+int LCD_cursor_goto(int line, int n);
 
 /**
  * @brief shift the content that is being displayed by LCD

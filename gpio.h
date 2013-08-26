@@ -18,8 +18,6 @@ typedef enum {
     PortB = 0x10        /**<      Expander Port B         */
 } Port;
 
-
-
 /**
  * @brief GPIO A buffer type definition
  * @details LSB is at the top, MSB is at the bottom!

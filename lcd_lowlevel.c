@@ -122,7 +122,7 @@ void LL_busy_wait()
 
 uint8_t LL_addr()
 {
-    return LL_read_byte(0);
+    return LL_read_byte(0) & ~BUSY_FLAG;
 }
 
 
