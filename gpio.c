@@ -94,9 +94,9 @@ static int exp_write(Port port, uint8_t reg, uint8_t val)
     if ( r == 2 ) {
         return 0;
     } else if( r == -1 ) {
-        printf("exp_write: write() error: %s\n", strerror(errno));
+        printf("exp_write: write error: %s\n", strerror(errno));
     } else {
-        printf("exp_write: write() error: %d\n", r);
+        printf("exp_write: write error: %d\n", r);
     }
     return r;
 }

@@ -46,6 +46,7 @@ extern int LCD_DISPLAY_SHIFT;
 
 /**
  * @brief Initialise the LCD screen
+ * @details wrapper for LL_init.
  * @return 0, on success; -1 on error.
  */
 int LCD_init();
@@ -94,8 +95,6 @@ int LCD_home();
 
 /**
  * @brief return LCD current cursor address
- * @note the side effect includes saving the current DDRAM address to a static
- * variable.
  */
 uint8_t LCD_cursor_addr();
 
@@ -135,8 +134,5 @@ int LCD_cursor_move(int n);
  * @return the current display shift
  */
 int LCD_display_shift(int n);
-
-/* Temporarily included */
-int write_byte(uint8_t data, int RS);
 
 #endif

@@ -1,16 +1,10 @@
-/**
- * @file lcd.c
- * @details
- * - The data pins for the LCD are connected in the reverse order on the
- * I/O expander. Hence we need to manually map pins.
- * - the send/receive nibble commands might cause misalignment in command
- * sequences. Please use them with caution.
- */
+
+
 #include <stdarg.h>
 #include <stdio.h>
-#include <unistd.h>
 
 #include "gpio.h"
+#include "lcd_lowlevel.h"
 
 #include "lcd.h"
 
@@ -49,177 +43,14 @@
 /** The number of characters DDRAM can store            */
 #define DDRAM_LENGTH        80
 
-/** GPIO Port B polarity for read                       */
-#define LCD_READ                0x1E
-/** GPIO Port B polarity for write                      */
-#define LCD_WRITE               0x00
-
-/** Busy Flag -- DB7 pin                                */
-#define BUSY_FLAG               0x80
-
-typedef union {
-    uint8_t byte;
-    struct {
-        unsigned int _0  : 1;
-        unsigned int _1  : 1;
-        unsigned int _2  : 1;
-        unsigned int _3  : 1;
-        unsigned int _4  : 1;
-        unsigned int _5  : 1;
-        unsigned int _6  : 1;
-        unsigned int _7  : 1;
-    } bit;
-} Byte;
-
 int LCD_DISPLAY_SHIFT = 0;
-
-/** LCD initialisation status flag */
-static int g_init = 0;
-
-/** Flag for indicating that the address register is pointed to CGRAM */
-static int g_toCGRAM = 0;
-
-/** DDRAM address before switching to CGRAM */
-static uint8_t g_DDRAM_addr = 0;
-
-/**
- * @brief Send a nibble to one of the LCD registers
- * @param[in] data please put the data in the lower nibble.
- * @param[in] RS
- * - 0: Select instruction register
- * - 1: Select data register
- * @return 0, on success
- * @warning: This function DOES NOT change the GPIO direction, so it should
- * not be called on its own.
- */
-static int write_nibble(uint8_t data, int RS)
-{
-
-    int r;
-    Byte b;
-
-    b.byte = data;
-    /* Set control pins */
-    GPIOB_buf.pin.RS = RS;
-    GPIOB_buf.pin.R = 0;
-
-    /* Set data pins */
-    GPIOB_buf.pin.DB7 = b.bit._3;
-    GPIOB_buf.pin.DB6 = b.bit._2;
-    GPIOB_buf.pin.DB5 = b.bit._1;
-    GPIOB_buf.pin.DB4 = b.bit._0;
-
-    /* Flip the E-pin.                                          */
-    /* Note that data is clocked in at the lowering edge.       */
-    GPIOB_buf.pin.E = 1;
-    r = GPIO_write(PortB);
-    GPIOB_buf.pin.E = 0;
-    r += GPIO_write(PortB);
-    return r;
-}
-
-/**
- * @brief read a nibble from one of the LCD registers
- * @param[in] RS
- * - 0: Select instruction register
- * - 1: Select data register
- * @return the data will be in the lower nibble.
- * @note please refer to the timing diagram at pg. 22
- */
-static uint8_t read_nibble(int RS)
-{
-    Byte b;
-    b.byte = 0;
-
-    /* Set control pins */
-    GPIOB_buf.pin.RS = RS;
-    GPIOB_buf.pin.R = 1;
-
-    /* Flip the E-pin.                                          */
-    /* Note that data is clocked in at the rising edge.         */
-    GPIOB_buf.pin.E = 0;
-    GPIO_write(PortB);
-    GPIOB_buf.pin.E = 1;
-    GPIO_write(PortB);
-
-    /* The actual read operation */
-    GPIO_read(PortB);
-
-    /* Copy back the data */
-    b.bit._3 = GPIOB_buf.pin.DB7;
-    b.bit._2 = GPIOB_buf.pin.DB6;
-    b.bit._1 = GPIOB_buf.pin.DB5;
-    b.bit._0 = GPIOB_buf.pin.DB4;
-    return b.byte;
-}
-
-/**
- * @brief Send a byte to the LCD screen
- * @details This function calls write_nibble twice.
- * @return
- * - on success: 0
- * - on error: accumulated error from the write_nibble call.
- */
-int write_byte(uint8_t data, int RS)
-{
-    if (!g_init) {
-        printf("write_byte: error: LCD is not initialised!\n");
-        return -1;
-    }
-    int r;
-    r =  GPIO_direction(PortB, LCD_WRITE);
-    r += write_nibble (data >> 4, RS);
-    r += write_nibble(data, RS);
-    return r;
-}
-
-/**
- * @brief read a byte from one of the LCD registers
- * @param[in] RS
- * - 0: Select instruction register
- * - 1: Select data register
- */
-static uint8_t read_byte(int RS)
-{
-    if (!g_init) {
-        printf("read_byte: error: LCD is not initialised!\n");
-        return -1;
-    }
-    uint8_t r;
-    GPIO_direction(PortB, LCD_READ);
-    r  = read_nibble(RS) << 4;
-    r |= read_nibble(RS);
-    return r;
-}
-
-/**
- * @brief Poll LCD until it is no longer busy
- */
-static void busy_wait()
-{
-    while (read_byte(0) & BUSY_FLAG)
-        ;
-}
-
-/**
- * @brief restore DDRAM address
- * @return 0, if the address counter is now point to DDRAM.
- */
-static int DDRAM_addr_restore()
-{
-    if (g_toCGRAM != 0) {
-        g_toCGRAM = 0;
-        LCD_cmd(DDRAM|g_DDRAM_addr);
-    }
-    return g_toCGRAM;
-}
 
 /**
  * @brief LCD DDRAM self test
  * @details Print DDRAM_LENGTH characters to DDRAM, and read them back. If they
  * are the same, then the test is successful.
  */
-static int self_test()
+static int DDRAM_self_test()
 {
     int i;
     int s = 0;
@@ -242,27 +73,27 @@ static int self_test()
 
 int LCD_init()
 {
-    if (g_init == 1) {
+    if (LL_init == 1) {
         printf("LCD_init: LCD is already initialised.\n");
         return 0;
     }
-    g_init = 1;
+    LL_init = 1;
     LCD_cmd(FOUR_BIT_MODE);
     LCD_cmd(FUNCTION_SET);
     LCD_cmd(DISPLAY_SET | DISPLAY_ON | CURSOR_ON | CURSOR_BLINK_ON);
     LCD_cmd(ENTRY_MODE_SET|INCREMENT);
-    int r = self_test();
+    int r = DDRAM_self_test();
     if (r == 0){
         return r;
     }
-    g_init = 0;
+    LL_init = 0;
     printf("LCD_init: LCD initialisation failed\n");
     return r;
 }
 
 int LCD_cmd(uint8_t cmd)
 {
-    return write_byte(cmd, 0);
+    return LL_write_byte(cmd, 0);
 }
 
 int LCD_putchar (char c)
@@ -275,34 +106,33 @@ int LCD_putchar (char c)
             return LCD_cmd(DDRAM | ((LCD_cursor_addr() > 0x27) ? 0x00 : 0x40));
             break;
     }
-    if (write_byte(c, 1) != 0) {
+    if (LL_write_byte(c, 1) != 0) {
         return EOF;
     }
     return (unsigned char) c;
 }
 
-/**
- * @brief read the character in DDRAM
- */
 char LCD_getchar()
 {
-    DDRAM_addr_restore();
-    char c = read_byte(1);
-    busy_wait();
+    char c = LL_read_byte(1);
+    LL_busy_wait();
     return c;
 }
-
+/**
+ * @note This function in fact returns the content of the LCD address counter,
+ * which could actually point to CGRAM. However all CGRAM related functions
+ * restore the content of the address counter at the end so it points to
+ * DDRAM.
+ */
 uint8_t LCD_cursor_addr()
 {
-    DDRAM_addr_restore();
-    g_DDRAM_addr = read_byte(0);
-    return g_DDRAM_addr;
+    return LL_addr();
 }
 
 int LCD_clear()
 {
     int r = LCD_cmd(CLEAR);
-    busy_wait();
+    LL_busy_wait();
     LCD_DISPLAY_SHIFT = 0;
     return r;
 }
