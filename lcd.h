@@ -40,9 +40,12 @@ extern int LCD_DISPLAY_SHIFT;
 /**
  * @brief Initialise the LCD screen
  * @details wrapper for LL_init.
+ * @param[in] display_control
+ * optional display control parameters, the same parameters in
+ * "Display on/off control" section of the definition list above.
  * @return 0, on success; -1 on error.
  */
-int LCD_init();
+int LCD_init(uint8_t display_control);
 
 /**
  * @brief Send a command to the LCD screen.

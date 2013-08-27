@@ -52,44 +52,18 @@
 
 int LCD_DISPLAY_SHIFT = 0;
 
-/**
- * @brief LCD DDRAM self test
- * @details Print DDRAM_LENGTH characters to DDRAM, and read them back. If they
- * are the same, then the test is successful.
- */
-static int DDRAM_self_test()
-{
-    int i;
-    int s = 0;
-    char c, d;
-    LCD_clear();
-    for (i = 0; i < DDRAM_LENGTH + 1 ; i++ ){
-        c = LCD_putchar('0' + i);
-        LCD_cursor_move(-1);
-        d = LCD_getchar();
-        if (c == d) {
-            s++;
-        }
-    }
-    if (s == DDRAM_LENGTH) {
-        LCD_clear();
-        return 0;
-    }
-    return -1;
-}
-
-int LCD_init()
+int LCD_init(uint8_t display_control)
 {
     if (LL_init == 1) {
         printf("LCD_init: LCD is already initialised.\n");
         return 0;
     }
     LL_init = 1;
-    LCD_cmd(FOUR_BIT_MODE);
-    LCD_cmd(FUNCTION_SET);
-    LCD_cmd(DISPLAY_SET | DISPLAY_ON | CURSOR_ON | CURSOR_BLINK_ON);
-    LCD_cmd(ENTRY_MODE_SET|INCREMENT);
-    int r = DDRAM_self_test();
+    int r = LCD_cmd(FOUR_BIT_MODE);
+    r += LCD_cmd(FUNCTION_SET);
+    r += LCD_cmd(DISPLAY_SET | DISPLAY_ON | display_control);
+    r += LCD_cmd(ENTRY_MODE_SET|INCREMENT);
+    r += LCD_clear();
     if (r == 0){
         return r;
     }
