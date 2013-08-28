@@ -55,7 +55,7 @@ int LCD_DISPLAY_SHIFT = 0;
 int LCD_init(uint8_t display_control)
 {
     if (LL_init == 1) {
-        printf("LCD_init: LCD is already initialised.\n");
+       fprintf(stderr, "LCD_init: LCD is already initialised.\n");
         return 0;
     }
     LL_init = 1;
@@ -68,7 +68,7 @@ int LCD_init(uint8_t display_control)
         return r;
     }
     LL_init = 0;
-    printf("LCD_init: LCD initialisation failed\n");
+   fprintf(stderr, "LCD_init: LCD initialisation failed\n");
     return r;
 }
 
@@ -210,11 +210,11 @@ int LCD_cursor_goto(int line, int n)
     int r = 0;
     uint8_t addr = 0;
     if (n > DDRAM_LENGTH / 2 - 1) {
-        printf("LCD_cursor_goto error: invalid character number detected.\n");
+       fprintf(stderr, "LCD_cursor_goto error: invalid character number detected.\n");
         return -1;
     }
     if (line > 2) {
-        printf("LCD_cursor_goto error: invalid line number detected.\n");
+       fprintf(stderr, "LCD_cursor_goto error: invalid line number detected.\n");
         return -1;
     }
     if (line == 1) {
@@ -231,7 +231,7 @@ int LCD_cursor_goto(int line, int n)
     if(LCD_cursor_addr() == addr) {
         return r;
     }
-    printf("LCD_cursor_goto error: the resulting address is inconsistent.\n");
+   fprintf(stderr, "LCD_cursor_goto error: the resulting address is inconsistent.\n");
     return -1;
 }
 
@@ -306,6 +306,6 @@ int LCD_colour(Colour colour)
     if (r == 0) {
         return r;
     }
-    printf("LCD_colour: Colour change error: %d\n", r);
+   fprintf(stderr, "LCD_colour: Colour change error: %d\n", r);
     return r;
 }

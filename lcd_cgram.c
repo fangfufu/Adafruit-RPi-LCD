@@ -30,7 +30,7 @@ static int DDRAM_addr_restore()
     if (old_DDRAM_addr == g_DDRAM_addr) {
         return 0;
     }
-    printf("LL_DDRAM_addr_restore error: could not restore DDRAM address");
+   fprintf(stderr, "LL_DDRAM_addr_restore error: could not restore DDRAM address");
     return -1;
 }
 
@@ -42,7 +42,7 @@ static int DDRAM_addr_restore()
 static int CGRAM_set_addr(int n)
 {
     if (n > 7){
-        printf("CGRAM_set_addr error: invalid address.");
+       fprintf(stderr, "CGRAM_set_addr error: invalid address.");
         return -1;
     }
     uint8_t cmd = CGRAM | (n << 3);
@@ -61,7 +61,7 @@ int CGRAM_write_character(int n, uint8_t data[8])
     }
     r += DDRAM_addr_restore();
     if (r != 0) {
-        printf("CGRAM_write_character error.\n");
+       fprintf(stderr, "CGRAM_write_character error.\n");
     }
     return r;
 }
@@ -81,7 +81,7 @@ int CGRAM_read_character(int n, uint8_t data[8])
     LL_busy_wait();
     r += DDRAM_addr_restore();
     if (r != 0) {
-        printf("CGRAM_read_character error.\n");
+       fprintf(stderr, "CGRAM_read_character error.\n");
     }
     return r;
 }
