@@ -36,7 +36,16 @@ You can install the program by issuing the following commands:
     sudo make install
 
 Please note that the compilation stage can be done on a Debian machine if you 
-have gcc-4.7-arm-linux-gnueabi installed
+have installed gcc-4.7-arm-linux-gnueabi from the Emdebian repository.
+
+Dependency
+----------
+This library/program depends on kernel module i2c-dev. You can load the module
+by typing in:
+
+    modprobe i2c-dev
+
+Alternatively you can edit /etc/modules.
 
 Usage
 -----
@@ -91,14 +100,15 @@ initialise the system by calling the following functions:
 
 Additional Information
 ----------------------
-### Vendors
+### Links
+#### Vendors
 You can buy the LCD plate from the following places:
 * Adafruit:
 http://www.adafruit.com/products/1110
 * UK Distributor (I bought mine there):
 https://www.modmypi.com/raspberry-pi-RGB-negative-16x2-LCD-kit
 
-### Datasheets
+#### Datasheets
 Hopefully my code is clear enough so you don't need datasheets. But if you care
 about how it all works, here is the additional information.
 
@@ -106,6 +116,10 @@ about how it all works, here is the additional information.
 http://ww1.microchip.com/downloads/en/devicedoc/21952b.pdf
 * HD44780 LCD Controller (ROM Code A00):
 https://www.adafruit.com/datasheets/HD44780.pdf
+
+#### Other resources
+* Adafruit's code for the Python LCD Plate:
+https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code/blob/master/Adafruit_CharLCDPlate/Adafruit_CharLCDPlate.py
 
 ### Pin Table
 The MCP23017 I2C I/O expander has two 8-bit GPIO ports. I have included the
