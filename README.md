@@ -84,7 +84,7 @@ LCD_init() // Initialise the LCD and perform self-check.
 
 @section extra Additional Information
 
-@subsection Vendors
+@subsection vendors Vendors
 You can buy the LCD plate from the following places:
 - Adafruit:
 http://www.adafruit.com/products/1110
