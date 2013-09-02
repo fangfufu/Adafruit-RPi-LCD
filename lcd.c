@@ -80,14 +80,14 @@ int LCD_putchar(char c)
     switch (c) {
     case '\r':
         if (LCD_cursor_addr() < DDRAM_1ST_ROW_END) {
-            addr = DDRAM_2ND_ROW_START;
+            addr = DDRAM_1ST_ROW_START;
         } else {
             addr = DDRAM_2ND_ROW_START;
         }
         return LCD_cmd(DDRAM | addr);
     case '\n':
         if (LCD_cursor_addr() > DDRAM_1ST_ROW_END) {
-            addr = DDRAM_2ND_ROW_START;
+            addr = DDRAM_1ST_ROW_START;
         } else {
             addr = DDRAM_2ND_ROW_START;
         }
