@@ -20,6 +20,9 @@
 #define CURSOR_ON               0x02
 #define CURSOR_BLINK_ON         0x01
 
+/** The number of characters on each line of the LCD    */
+#define LCD_LENGTH              16
+
 /**
  * @brief The colours available on the LCD
  */

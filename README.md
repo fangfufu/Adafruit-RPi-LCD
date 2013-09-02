@@ -51,6 +51,17 @@ Usage: adafruit-rpi-lcd [OPTION]... [MESSAGE]...
 Report bugs and make suggestions at:
 https://github.com/fangfufu/Adafruit-RPi-LCD/issues
 
+@section exit Exit Code
+Below is a table of the exit code for adafruit-rpi-lcd:
+ Exit Code | Description
+-----------|--------------------------------------------
+    0      | Successfully printed a message.
+    1      | Printed the help message in the terminal.
+    2      | Colour option was invalid.
+    3      | Cursor option was invalid.
+    5      | Colour option and Cursor option were both invalid.
+
+
 @section header Header files
 Here is a brief description of what each header file do:
 - gpio.h: functions related to the I2C GPIO expander

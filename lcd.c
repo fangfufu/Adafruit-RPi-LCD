@@ -35,9 +35,6 @@
 
 /* Other bits and pieces                                */
 
-/** The number of characters on each line of the LCD    */
-#define LCD_LENGTH              16
-
 /** The number of characters DDRAM can store            */
 #define DDRAM_LENGTH            80
 
