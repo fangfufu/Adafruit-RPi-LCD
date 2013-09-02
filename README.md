@@ -34,7 +34,7 @@ You can install the program by issuing the following commands:
 
     make
     sudo make install
-    
+
 Please note that the compilation stage can be done on a Debian machine if you 
 have gcc-4.7-arm-linux-gnueabi installed
 
