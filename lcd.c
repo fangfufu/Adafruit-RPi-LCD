@@ -306,6 +306,6 @@ int LCD_colour(Colour colour)
     if (r == 0) {
         return r;
     }
-   fprintf(stderr, "LCD_colour: Colour change error: %d\n", r);
+    fprintf(stderr, "LCD_colour: Colour change error: %d\n", r);
     return r;
 }

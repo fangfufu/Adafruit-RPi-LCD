@@ -9,22 +9,26 @@
 #include "lcd.h"
 #include "lcd_cgram.h"
 
-static int set_colour(const char* s);
-static int set_cursor(const char* s);
-static int help();
+#define VERSION_NUMBER 1.00
 
-static int lcd_off = 0;
-static uint8_t lcd_opts = 0;
-static int verbose = 0;
+static int set_colour(const char* s);
+static uint8_t set_cursor(const char* s);
+static void print_help();
 
 int main(int argc, char* const* argv)
 {
-    int s;
+    int r = 0;
+    int s = 0;
     int opts_index = 0;
+
+    int lcd_on = 0;
+    int verbose = 0;
+    int help = 0;
+    char* colour_string = 0;
+    char* cursor_string = 0;
 
     char* short_opts = "hc:u:v";
     struct option long_opts[] = {
-        {"off", no_argument, &lcd_off, 1},
         {"verbose", no_argument, &verbose, 1},
         {"help", no_argument, NULL, 'h'},
         {"colour", required_argument, NULL, 'c'},
@@ -35,69 +39,125 @@ int main(int argc, char* const* argv)
     GPIO_open();
     LCD_init(0);
 
-    int option_index;
-    
     while( (s = getopt_long(
-        argc, argv, short_opts, long_opts, &opts_index)) > 0 ) {
+        argc, argv, short_opts, long_opts, &opts_index)) != -1 ) {
         switch(s){
             case 'h':
-                printf("help\n");
+                help = 1;
+                print_help();
                 break;
             case 'c':
-                set_colour(optarg);
+                lcd_on = 1;
+                r += set_colour(optarg);
+                colour_string = optarg;
                 break;
             case 'u':
-                printf("cursor: %s\n", optarg);
+                cursor_string = optarg;
+                r += set_cursor(optarg);
                 break;
+            case 'v':
+                verbose = 1;
             case '?':
                 break;
         }
     };
 
-    printf("main verbose: %d\n", verbose);
-
-    if(lcd_off){
-        if(verbose){
-            printf("Turning off LCD\n");
-        }
-        LCD_colour(Black);
+    /* Turn off LCD if you don't supply a message or set a colour */
+    if ( (optind == argc && !lcd_on) | help ){
+        r += LCD_cmd(DISPLAY_SET);
+        r += LCD_colour(Black);
     }
 
     /* printing off the remaining arguments */
+    int optind_old = optind;
+    int n = 0;
     while(optind < argc){
-        LCD_wrap_printf("%s ", argv[optind++]);
+        n += LCD_wrap_printf("%s ", argv[optind++]);
     }
-    return 0;
+    LCD_cursor_move(-1);
+    optind = optind_old;
+
+    /* verbose flag print off more messages */
+    if(verbose && !help){
+        if(colour_string) {
+            printf("Setting LCD colour to: %s\n", colour_string);
+        }
+        if(cursor_string) {
+            printf("Setting cursor to: %s\n", cursor_string);
+        }
+
+        printf("Printed %d characters: \n", n);
+        while(optind < argc){
+            printf("%s ", argv[optind++]);
+        }
+        printf("\n");
+
+        if(!lcd_on){
+            printf("Turning off LCD\n");
+        }
+    }
+    return r;
 }
 
-int set_colour(const char* carg)
+static int set_colour(const char* carg)
 {
-    printf("set_colour verbose: %d\n", verbose);
-
-    Colour c = Black;
-
-    if(!strncasecmp(carg, "White", 5)) {
-        c = Black;
-    } else if (!strncasecmp(carg, "Red", 3)) {
-        c =  Red;
-    } else if (!strncasecmp(carg, "Yellow", 6)) {
-        c =  Yellow;
-    } else if (!strncasecmp(carg, "Green", 5)) {
-        c =  Green;
-    } else if (!strncasecmp(carg, "Cyan", 4)) {
-        c =  Cyan;
-    } else if (!strncasecmp(carg, "Blue", 4)) {
-        c =  Blue;
-    } else if (!strncasecmp(carg, "Magenta", 7)) {
-        c =  Magenta;
-    } else if (!strncasecmp(carg, "White", 5)) {
-        c =  White;
+    if(!strcasecmp(carg, "Black")) {
+        return LCD_colour(Black);
+    } else if (!strcasecmp(carg, "Red")) {
+        return LCD_colour(Red);
+    } else if (!strcasecmp(carg, "Yellow")) {
+        return LCD_colour(Yellow);
+    } else if (!strcasecmp(carg, "Green")) {
+        return LCD_colour(Green);
+    } else if (!strcasecmp(carg, "Cyan")) {
+        return LCD_colour(Cyan);
+    } else if (!strcasecmp(carg, "Blue")) {
+        return LCD_colour(Blue);
+    } else if (!strcasecmp(carg, "Magenta")) {
+        return LCD_colour(Magenta);
+    } else if (!strcasecmp(carg, "White")) {
+        return LCD_colour(White);
     } else {
-        fprintf(stderr, "string_to_colour error: Invalid colour");
+        fprintf(stderr, "set_colour error: Invalid colour.\n");
+        LCD_colour(Black);
     }
+    return -1;
+}
 
-    if(verbose) {
-        printf("Setting LCD colour to: %s\n", carg);
+static uint8_t set_cursor(const char* carg)
+{
+    if(!strcasecmp(carg, "Blink")) {
+        return LCD_cmd(DISPLAY_SET | DISPLAY_ON | CURSOR_BLINK_ON);
+    } else if (!strcasecmp(carg, "On")) {
+        return LCD_cmd(DISPLAY_SET | DISPLAY_ON | CURSOR_ON);
+    } else if (!strcasecmp(carg, "Off")) {
+        return 0;
+    } else {
+        fprintf(stderr, "set_cursor error: Invalid option.\n");
     }
-    return LCD_colour(c);
+    return -1;
+}
+
+static void print_help()
+{
+    printf(
+"Adafruit-RPi-LCD v%.2f, \
+Adafruit Raspberry Pi LCD Plate Controller\n\
+Usage: adafruit-rpi-lcd [OPTION]... [MESSAGE]...\n\n\
+\
+  -c, --colour\
+\t\t\tSet LCD colour, possible colour include:\n\
+\t\t\t\tBlack, Red, Yellow, Green, Cyan, Blue, Magenta, White.\n\
+\t\t\t\tColour names are case insensitive.\n\
+  -u, --cursor\
+\t\t\tSet LCD cursor, possible option include:\n\
+\t\t\t\tOn, Off, Blink\n\
+\t\t\t\tCursor options are case insensitive.\n\
+  -v, --verbose\
+\t\t\tTurn on the verbose mode\n\
+  -h, --help\
+\t\t\tPrint this help message\n\n\
+Report bugs and make suggestions at:\n\
+https://github.com/fangfufu/Adafruit-RPi-LCD/issues\n",
+VERSION_NUMBER);
 }
