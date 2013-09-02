@@ -40,21 +40,22 @@ have gcc-4.7-arm-linux-gnueabi installed
 
 Usage
 -----
-Adafruit-RPi-LCD v1.00, Adafruit Raspberry Pi LCD Plate Controller
-Usage: adafruit-rpi-lcd [OPTION]... [MESSAGE]...
 
-  -c, --colour                  Set LCD colour, possible colour include:
-                                Black, Red, Yellow, Green, Cyan, Blue, 
-                                Magenta, White.
-                                Colour names are case insensitive.
-  -u, --cursor                  Set LCD cursor, possible option include:
-                                On, Off, Blink
-                                Cursor options are case insensitive.
-  -v, --verbose                 Turn on the verbose mode
-  -h, --help                    Print this help message
+    Adafruit-RPi-LCD v1.00, Adafruit Raspberry Pi LCD Plate Controller
+    Usage: adafruit-rpi-lcd [OPTION]... [MESSAGE]...
 
-Report bugs and make suggestions at:
-https://github.com/fangfufu/Adafruit-RPi-LCD/issues
+    -c, --colour                  Set LCD colour, possible colour include:
+                                    Black, Red, Yellow, Green, Cyan, Blue, 
+                                    Magenta, White.
+                                    Colour names are case insensitive.
+    -u, --cursor                  Set LCD cursor, possible option include:
+                                    On, Off, Blink
+                                    Cursor options are case insensitive.
+    -v, --verbose                 Turn on the verbose mode
+    -h, --help                    Print this help message
+
+    Report bugs and make suggestions at:
+    https://github.com/fangfufu/Adafruit-RPi-LCD/issues
 
 Exit Code
 ---------
