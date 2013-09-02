@@ -4,7 +4,7 @@ else
   CC = arm-linux-gnueabi-gcc-4.7
 endif
 
-CFLAGS = -std=gnu99 -g -Wall -Wextra -O2 -pedantic
+CFLAGS = -std=gnu99 -Wall -Wextra -O2 -pedantic
 LDFLAGS =
 SOURCES = main.c gpio.c lcd.c button.c lcd_lowlevel.c lcd_cgram.c
 OBJECTS = $(SOURCES:.c=.o)

@@ -25,14 +25,14 @@ typedef enum {
 typedef union {
     uint8_t reg;
     struct {
-        unsigned int SELECT : 1;
-        unsigned int RIGHT  : 1;
-        unsigned int DOWN   : 1;
-        unsigned int UP     : 1;
-        unsigned int LEFT   : 1;
-        unsigned int        : 1;
-        unsigned int RED    : 1;
-        unsigned int GREEN  : 1;
+        unsigned int SELECT:1;
+        unsigned int RIGHT:1;
+        unsigned int DOWN:1;
+        unsigned int UP:1;
+        unsigned int LEFT:1;
+        unsigned int:1;
+        unsigned int RED:1;
+        unsigned int GREEN:1;
     } pin;
 } GPIOA_BUF_t;
 
@@ -40,17 +40,17 @@ typedef union {
  * @brief GPIO B buffer type definition
  * @details LSB is at the top, MSB is at the bottom!
  */
-typedef union  {
+typedef union {
     uint8_t reg;
     struct {
-        unsigned int BLUE   : 1;
-        unsigned int DB7    : 1;
-        unsigned int DB6    : 1;
-        unsigned int DB5    : 1;
-        unsigned int DB4    : 1;
-        unsigned int E      : 1;
-        unsigned int R      : 1;
-        unsigned int RS     : 1;
+        unsigned int BLUE:1;
+        unsigned int DB7:1;
+        unsigned int DB6:1;
+        unsigned int DB5:1;
+        unsigned int DB4:1;
+        unsigned int E:1;
+        unsigned int R:1;
+        unsigned int RS:1;
     } pin;
 } GPIOB_BUF_t;
 

@@ -24,14 +24,14 @@ int LL_init = 0;
 typedef union {
     uint8_t byte;
     struct {
-        unsigned int _0  : 1;
-        unsigned int _1  : 1;
-        unsigned int _2  : 1;
-        unsigned int _3  : 1;
-        unsigned int _4  : 1;
-        unsigned int _5  : 1;
-        unsigned int _6  : 1;
-        unsigned int _7  : 1;
+        unsigned int _0:1;
+        unsigned int _1:1;
+        unsigned int _2:1;
+        unsigned int _3:1;
+        unsigned int _4:1;
+        unsigned int _5:1;
+        unsigned int _6:1;
+        unsigned int _7:1;
     } bit;
 } Byte;
 
@@ -90,12 +90,12 @@ uint8_t LL_read_nibble(int RS)
 int LL_write_byte(uint8_t data, int RS)
 {
     if (!LL_init) {
-       fprintf(stderr, "LL_write_byte error: LCD is not initialised!\n");
+        fprintf(stderr, "LL_write_byte error: LCD is not initialised!\n");
         return -1;
     }
     int r;
-    r =  GPIO_direction(PortB, LCD_WRITE);
-    r += LL_write_nibble (data >> 4, RS);
+    r = GPIO_direction(PortB, LCD_WRITE);
+    r += LL_write_nibble(data >> 4, RS);
     r += LL_write_nibble(data, RS);
     return r;
 }
@@ -103,12 +103,12 @@ int LL_write_byte(uint8_t data, int RS)
 uint8_t LL_read_byte(int RS)
 {
     if (!LL_init) {
-       fprintf(stderr, "LL_read_byte error: LCD is not initialised!\n");
+        fprintf(stderr, "LL_read_byte error: LCD is not initialised!\n");
         return -1;
     }
     uint8_t r;
     GPIO_direction(PortB, LCD_READ);
-    r  = LL_read_nibble(RS) << 4;
+    r = LL_read_nibble(RS) << 4;
     r |= LL_read_nibble(RS);
     return r;
 }
@@ -116,13 +116,10 @@ uint8_t LL_read_byte(int RS)
 
 void LL_busy_wait()
 {
-    while (LL_read_byte(0) & BUSY_FLAG)
-        ;
+    while (LL_read_byte(0) & BUSY_FLAG);
 }
 
 uint8_t LL_addr()
 {
     return LL_read_byte(0) & ~BUSY_FLAG;
 }
-
-

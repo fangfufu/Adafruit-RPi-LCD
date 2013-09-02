@@ -52,20 +52,20 @@ int LCD_DISPLAY_SHIFT = 0;
 int LCD_init(uint8_t display_control)
 {
     if (LL_init == 1) {
-       fprintf(stderr, "LCD_init: LCD is already initialised.\n");
+        fprintf(stderr, "LCD_init: LCD is already initialised.\n");
         return 0;
     }
     LL_init = 1;
     int r = LCD_cmd(FOUR_BIT_MODE);
     r += LCD_cmd(FUNCTION_SET);
     r += LCD_cmd(DISPLAY_SET | DISPLAY_ON | display_control);
-    r += LCD_cmd(ENTRY_MODE_SET|INCREMENT);
+    r += LCD_cmd(ENTRY_MODE_SET | INCREMENT);
     r += LCD_clear();
-    if (r == 0){
+    if (r == 0) {
         return r;
     }
     LL_init = 0;
-   fprintf(stderr, "LCD_init: LCD initialisation failed\n");
+    fprintf(stderr, "LCD_init: LCD initialisation failed\n");
     return r;
 }
 
@@ -74,24 +74,24 @@ int LCD_cmd(uint8_t cmd)
     return LL_write_byte(cmd, 0);
 }
 
-int LCD_putchar (char c)
+int LCD_putchar(char c)
 {
     uint8_t addr;
-    switch(c) {
-        case '\r':
-            if (LCD_cursor_addr() < DDRAM_1ST_ROW_END){
-                addr = DDRAM_2ND_ROW_START;
-            } else {
-                addr = DDRAM_2ND_ROW_START;
-            }
-            return LCD_cmd(DDRAM | addr);
-        case '\n':
-            if (LCD_cursor_addr() > DDRAM_1ST_ROW_END){
-                addr = DDRAM_2ND_ROW_START;
-            } else {
-                addr = DDRAM_2ND_ROW_START;
-            }
-            return LCD_cmd(DDRAM | addr);
+    switch (c) {
+    case '\r':
+        if (LCD_cursor_addr() < DDRAM_1ST_ROW_END) {
+            addr = DDRAM_2ND_ROW_START;
+        } else {
+            addr = DDRAM_2ND_ROW_START;
+        }
+        return LCD_cmd(DDRAM | addr);
+    case '\n':
+        if (LCD_cursor_addr() > DDRAM_1ST_ROW_END) {
+            addr = DDRAM_2ND_ROW_START;
+        } else {
+            addr = DDRAM_2ND_ROW_START;
+        }
+        return LCD_cmd(DDRAM | addr);
     }
     if (LL_write_byte(c, 1) != 0) {
         return EOF;
@@ -135,7 +135,7 @@ int LCD_home()
 int LCD_line_clear()
 {
     int r = LCD_putchar('\r');
-    for (int i =0; i < LCD_LENGTH; i++){
+    for (int i = 0; i < LCD_LENGTH; i++) {
         r += LCD_putchar(' ');
     }
     r += LCD_putchar('\r');
@@ -152,7 +152,7 @@ int LCD_printf(const char *format, ...)
     vsnprintf(s, DDRAM_LENGTH + 1, format, arg);
     va_end(arg);
 
-    for (i = 0; s[i] != '\0'; i++){
+    for (i = 0; s[i] != '\0'; i++) {
         LCD_putchar(s[i]);
     }
 
@@ -171,7 +171,7 @@ int LCD_wrap_printf(const char *format, ...)
     vsnprintf(s, 2 * LCD_LENGTH + 1, format, arg);
     va_end(arg);
 
-    for (i = 0; s[i] != '\0'; i++){
+    for (i = 0; s[i] != '\0'; i++) {
         if (i == LCD_LENGTH) {
             LCD_putchar('\n');
         }
@@ -184,13 +184,13 @@ int LCD_wrap_printf(const char *format, ...)
 int LCD_cursor_move(int n)
 {
     int i;
-    if (n > 0){
+    if (n > 0) {
         for (i = 0; i < n; i++) {
-            LCD_cmd(SHIFT|CURSOR|RIGHT);
+            LCD_cmd(SHIFT | CURSOR | RIGHT);
         }
     } else {
         for (i = 0; i > n; i--) {
-            LCD_cmd(SHIFT|CURSOR|LEFT);
+            LCD_cmd(SHIFT | CURSOR | LEFT);
         }
     }
     return LCD_cursor_addr();
@@ -207,11 +207,13 @@ int LCD_cursor_goto(int line, int n)
     int r = 0;
     uint8_t addr = 0;
     if (n > DDRAM_LENGTH / 2 - 1) {
-       fprintf(stderr, "LCD_cursor_goto error: invalid character number detected.\n");
+        fprintf(stderr,
+                "LCD_cursor_goto error: invalid character number detected.\n");
         return -1;
     }
     if (line > 2) {
-       fprintf(stderr, "LCD_cursor_goto error: invalid line number detected.\n");
+        fprintf(stderr,
+                "LCD_cursor_goto error: invalid line number detected.\n");
         return -1;
     }
     if (line == 1) {
@@ -225,24 +227,25 @@ int LCD_cursor_goto(int line, int n)
 
     LCD_cmd(DDRAM | addr);
 
-    if(LCD_cursor_addr() == addr) {
+    if (LCD_cursor_addr() == addr) {
         return r;
     }
-   fprintf(stderr, "LCD_cursor_goto error: the resulting address is inconsistent.\n");
+    fprintf(stderr,
+            "LCD_cursor_goto error: the resulting address is inconsistent.\n");
     return -1;
 }
 
 int LCD_display_shift(int n)
 {
     int i = 0;
-    if (n > 0){
+    if (n > 0) {
         for (i = 0; i < n; i++) {
-            LCD_cmd(SHIFT|DISPLAY|RIGHT);
+            LCD_cmd(SHIFT | DISPLAY | RIGHT);
             LCD_DISPLAY_SHIFT++;
         }
     } else {
         for (i = 0; i > n; i--) {
-            LCD_cmd(SHIFT|DISPLAY|LEFT);
+            LCD_cmd(SHIFT | DISPLAY | LEFT);
             LCD_DISPLAY_SHIFT--;
         }
     }
@@ -254,47 +257,47 @@ int LCD_colour(Colour colour)
 {
     /* Note that logic value '1' actually turns the LEDs off,
      * and logic value '0' turns them on.               */
-    switch(colour) {
-        case Black:
-            GPIOA_buf.pin.RED = 1;
-            GPIOA_buf.pin.GREEN = 1;
-            GPIOB_buf.pin.BLUE = 1;
-            break;
-        case Red:
-            GPIOA_buf.pin.RED = 0;
-            GPIOA_buf.pin.GREEN = 1;
-            GPIOB_buf.pin.BLUE = 1;
-            break;
-        case Yellow:
-            GPIOA_buf.pin.RED = 0;
-            GPIOA_buf.pin.GREEN = 0;
-            GPIOB_buf.pin.BLUE = 1;
-            break;
-        case Green:
-            GPIOA_buf.pin.RED = 1;
-            GPIOA_buf.pin.GREEN = 0;
-            GPIOB_buf.pin.BLUE = 1;
-            break;
-        case Cyan:
-            GPIOA_buf.pin.RED = 1;
-            GPIOA_buf.pin.GREEN = 0;
-            GPIOB_buf.pin.BLUE = 0;
-            break;
-        case Blue:
-            GPIOA_buf.pin.RED = 1;
-            GPIOA_buf.pin.GREEN = 1;
-            GPIOB_buf.pin.BLUE = 0;
-            break;
-        case Magenta:
-            GPIOA_buf.pin.RED = 0;
-            GPIOA_buf.pin.GREEN = 1;
-            GPIOB_buf.pin.BLUE = 0;
-            break;
-        case White:
-            GPIOA_buf.pin.RED = 0;
-            GPIOA_buf.pin.GREEN = 0;
-            GPIOB_buf.pin.BLUE = 0;
-            break;
+    switch (colour) {
+    case Black:
+        GPIOA_buf.pin.RED = 1;
+        GPIOA_buf.pin.GREEN = 1;
+        GPIOB_buf.pin.BLUE = 1;
+        break;
+    case Red:
+        GPIOA_buf.pin.RED = 0;
+        GPIOA_buf.pin.GREEN = 1;
+        GPIOB_buf.pin.BLUE = 1;
+        break;
+    case Yellow:
+        GPIOA_buf.pin.RED = 0;
+        GPIOA_buf.pin.GREEN = 0;
+        GPIOB_buf.pin.BLUE = 1;
+        break;
+    case Green:
+        GPIOA_buf.pin.RED = 1;
+        GPIOA_buf.pin.GREEN = 0;
+        GPIOB_buf.pin.BLUE = 1;
+        break;
+    case Cyan:
+        GPIOA_buf.pin.RED = 1;
+        GPIOA_buf.pin.GREEN = 0;
+        GPIOB_buf.pin.BLUE = 0;
+        break;
+    case Blue:
+        GPIOA_buf.pin.RED = 1;
+        GPIOA_buf.pin.GREEN = 1;
+        GPIOB_buf.pin.BLUE = 0;
+        break;
+    case Magenta:
+        GPIOA_buf.pin.RED = 0;
+        GPIOA_buf.pin.GREEN = 1;
+        GPIOB_buf.pin.BLUE = 0;
+        break;
+    case White:
+        GPIOA_buf.pin.RED = 0;
+        GPIOA_buf.pin.GREEN = 0;
+        GPIOB_buf.pin.BLUE = 0;
+        break;
     }
     int r;
     r = GPIO_write(PortA);

@@ -66,7 +66,7 @@ int LCD_cmd(uint8_t cmd);
  * @return the character written as an unsigned char cast to an int or
  * EOF on error
  */
-int LCD_putchar (char c);
+int LCD_putchar(char c);
 
 /**
  * @brief read the character in DDRAM
