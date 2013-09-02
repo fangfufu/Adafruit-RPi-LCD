@@ -1,7 +1,16 @@
 Adafruit-RPi-LCD
 =============================================
 @mainpage
-@section intro Introduction
+
+Documentation
+-------------
+You can generate a nice set of html documentation by issuing the following
+command:
+
+    doxygen Doxyfile
+
+Introduction
+------------
 This program allows you to control Adafruit Raspberry Pi 
 RGB LCD Plate.
 
@@ -14,29 +23,23 @@ can drive the LCD very easily. You can even do a "printf" to the LCD. I don't
 think many libraries have such nice feature. This library also perform
 proper error checking.
 
-@section doc Documentation
-You can generate a nice set of html documentation by issuing the following
-command:
-@code
-doxygen Doxyfile
-@endcode
-
 If you don't have Doxygen, and you are on Debian-based system, you can install
 Doxygen by issuing:
-@code
-sudo apt-get install doxygen
-@endcode
 
-@section install Installation
+    sudo apt-get install doxygen
+
+Installation
+------------
 You can install the program by issuing the following commands:
-@code
-make
-sudo make install
-@endcode
+
+    make
+    sudo make install
+    
 Please note that the compilation stage can be done on a Debian machine if you 
 have gcc-4.7-arm-linux-gnueabi installed
 
-@section usage Usage
+Usage
+-----
 Adafruit-RPi-LCD v1.00, Adafruit Raspberry Pi LCD Plate Controller
 Usage: adafruit-rpi-lcd [OPTION]... [MESSAGE]...
 
@@ -53,7 +56,8 @@ Usage: adafruit-rpi-lcd [OPTION]... [MESSAGE]...
 Report bugs and make suggestions at:
 https://github.com/fangfufu/Adafruit-RPi-LCD/issues
 
-@section exit Exit Code
+Exit Code
+---------
 Below is a table of the exit code for adafruit-rpi-lcd:
 
  Exit Code | Description
@@ -65,42 +69,44 @@ Below is a table of the exit code for adafruit-rpi-lcd:
     5      | Colour option and Cursor option were both invalid.
 
 
-@section header Header files
+Header files
+------------
 Here is a brief description of what each header file do:
-- gpio.h: functions related to the I2C GPIO expander
-- button.h: functions related to GPIO buttons
-- lcd.h: functions related to the normal operation of the LCD.
-- lcd_cgram.h: functions for creating custom characters on the LCD.
-- lcd_lowlevel.h: low level LCD functions, you should never need to included
+* gpio.h: functions related to the I2C GPIO expander
+* button.h: functions related to GPIO buttons
+* lcd.h: functions related to the normal operation of the LCD.
+* lcd_cgram.h: functions for creating custom characters on the LCD.
+* lcd_lowlevel.h: low level LCD functions, you should never need to included
 this header.
 
-@section Initialisation
+Initialisation
+--------------
 To initialise the LCD plate, you need to include gpio.h and lcd.h. You can
 initialise the system by calling the following functions:
-@code
-GPIO_open() // Open the GPIO ports for read/write operations.
-LCD_init() // Initialise the LCD and perform self-check.
-@endcode
 
-@section extra Additional Information
+    GPIO_open() // Open the GPIO ports for read/write operations.
+    LCD_init() // Initialise the LCD and perform self-check.
 
-@subsection vendors Vendors
+
+Additional Information
+----------------------
+### Vendors
 You can buy the LCD plate from the following places:
-- Adafruit:
+* Adafruit:
 http://www.adafruit.com/products/1110
-- UK Distributor (I bought mine there):
+* UK Distributor (I bought mine there):
 https://www.modmypi.com/raspberry-pi-RGB-negative-16x2-LCD-kit
 
-@subsection datasheet Datasheets
+### Datasheets
 Hopefully my code is clear enough so you don't need datasheets. But if you care
 about how it all works, here is the additional information.
 
-- MCP23017 I2C I/O expander:
+* MCP23017 I2C I/O expander:
 http://ww1.microchip.com/downloads/en/devicedoc/21952b.pdf
-- HD44780 LCD Controller (ROM Code A00):
+* HD44780 LCD Controller (ROM Code A00):
 https://www.adafruit.com/datasheets/HD44780.pdf
 
-@subsection table Pin Table
+### Pin Table
 The MCP23017 I2C I/O expander has two 8-bit GPIO ports. I have included the
 pin connection table below for reference:
 
