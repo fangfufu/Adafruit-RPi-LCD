@@ -2,6 +2,7 @@
 #define LL_H
 
 /**
+ * @file lcd_lowlevel.h
  * @brief LCD Low level commands
  * @details These are the low level LCD commands that user shouldn't never need to
  * call. You shouldn't need to include this header file in your project.
