@@ -33,6 +33,8 @@ You can install the program by issuing the following commands:
 make
 sudo make install
 @endcode
+Please note that the compilation stage can be done on a Debian machine if you 
+have gcc-4.7-arm-linux-gnueabi installed
 
 @section usage Usage
 Adafruit-RPi-LCD v1.00, Adafruit Raspberry Pi LCD Plate Controller
@@ -99,7 +101,7 @@ https://www.adafruit.com/datasheets/HD44780.pdf
 
 @subsection table Pin Table
 The MCP23017 I2C I/O expander has two 8-bit GPIO ports. I have included the
-pin connection table below for reference.
+pin connection table below for reference:
 
 Pin No. |7       |6       |5       |4       |3       |2       |1       |0
 --------|--------|--------|--------|--------|--------|--------|--------|-------
