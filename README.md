@@ -1,15 +1,20 @@
-Adafruit-Raspberry-Pi-RGB-LCD-Plate-C-Library
+Adafruit-RPi-LCD
 =============================================
 @mainpage
 @section intro Introduction
-This is a C library for driving the Adafruit Raspberry Pi RGB LCD Plate.
-It should work for the monochrome version with minor modification.
+This program allows you to control Adafruit Raspberry Pi 
+RGB LCD Plate.
 
-The idea is that you include the header file in your project, so you can
-drive the LCD very easily. You can indeed do a "printf" to the LCD. I don't
+This project started off as a C library for driving the Adafruit Raspberry Pi 
+RGB LCD Plate. It should work for the monochrome version with minor 
+modification.
+
+The original idea was that you include the header file in your project, so you 
+can drive the LCD very easily. You can even do a "printf" to the LCD. I don't
 think many libraries have such nice feature. This library also perform
-proper error checking
+proper error checking.
 
+@section doc Documentation
 You can generate a nice set of html documentation by issuing the following
 command:
 @code
@@ -21,6 +26,30 @@ Doxygen by issuing:
 @code
 sudo apt-get install doxygen
 @endcode
+
+@section install Installation
+You can install the program by issuing the following commands:
+@code
+make
+sudo make install
+@endcode
+
+@section usage Usage
+Adafruit-RPi-LCD v1.00, Adafruit Raspberry Pi LCD Plate Controller
+Usage: adafruit-rpi-lcd [OPTION]... [MESSAGE]...
+
+  -c, --colour                  Set LCD colour, possible colour include:
+                                Black, Red, Yellow, Green, Cyan, Blue, 
+                                Magenta, White.
+                                Colour names are case insensitive.
+  -u, --cursor                  Set LCD cursor, possible option include:
+                                On, Off, Blink
+                                Cursor options are case insensitive.
+  -v, --verbose                 Turn on the verbose mode
+  -h, --help                    Print this help message
+
+Report bugs and make suggestions at:
+https://github.com/fangfufu/Adafruit-RPi-LCD/issues
 
 @section header Header files
 Here is a brief description of what each header file do:

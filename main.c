@@ -12,7 +12,7 @@
 #define VERSION_NUMBER 1.00
 
 static int set_colour(const char* s);
-static uint8_t set_cursor(const char* s);
+static int set_cursor(const char* s);
 static void print_help();
 
 int main(int argc, char* const* argv)
@@ -99,6 +99,9 @@ int main(int argc, char* const* argv)
     return r;
 }
 
+/**
+ * @brief set LCD colour from a string.
+ */
 static int set_colour(const char* carg)
 {
     if(!strcasecmp(carg, "Black")) {
@@ -124,7 +127,10 @@ static int set_colour(const char* carg)
     return -1;
 }
 
-static uint8_t set_cursor(const char* carg)
+/**
+ * @brief Set cursor using a string.
+ */
+static int set_cursor(const char* carg)
 {
     if(!strcasecmp(carg, "Blink")) {
         return LCD_cmd(DISPLAY_SET | DISPLAY_ON | CURSOR_BLINK_ON);
@@ -147,7 +153,8 @@ Usage: adafruit-rpi-lcd [OPTION]... [MESSAGE]...\n\n\
 \
   -c, --colour\
 \t\t\tSet LCD colour, possible colour include:\n\
-\t\t\t\tBlack, Red, Yellow, Green, Cyan, Blue, Magenta, White.\n\
+\t\t\t\tBlack, Red, Yellow, Green, Cyan, Blue,\n\
+\t\t\t\tMagenta, White.\n\
 \t\t\t\tColour names are case insensitive.\n\
   -u, --cursor\
 \t\t\tSet LCD cursor, possible option include:\n\

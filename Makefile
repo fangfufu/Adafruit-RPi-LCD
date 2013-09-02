@@ -9,6 +9,7 @@ LDFLAGS =
 SOURCES = main.c gpio.c lcd.c button.c lcd_lowlevel.c lcd_cgram.c
 OBJECTS = $(SOURCES:.c=.o)
 EXECUTABLE = adafruit-rpi-lcd
+INSTALL_PATH = /usr/local/bin
 
 all: $(SOURCES) $(EXECUTABLE)
 
@@ -23,8 +24,12 @@ include .depend
 
 .PHONY: clean
 clean:
-	rm *.o $(EXECUTABLE) html -rf
+	rm *.o $(EXECUTABLE) -rf
 
-.PHONY: html
-html:
-	doxygen Doxyfile
+.PHONY: install
+install:
+	install -m 0755 $(EXECUTABLE) /usr/local/bin
+
+.PHONY: uninstall
+uninstall:
+	rm -rf /usr/local/bin/$(EXECUTABLE)
