@@ -55,6 +55,7 @@ https://github.com/fangfufu/Adafruit-RPi-LCD/issues
 
 @section exit Exit Code
 Below is a table of the exit code for adafruit-rpi-lcd:
+
  Exit Code | Description
 -----------|--------------------------------------------
     0      | Successfully printed a message.
