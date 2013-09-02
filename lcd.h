@@ -147,4 +147,9 @@ int LCD_cursor_goto(int line, int n);
  */
 int LCD_display_shift(int n);
 
+/**
+ * @brief turn off the LCD
+ */
+int LCD_off();
+
 #endif

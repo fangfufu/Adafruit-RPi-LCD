@@ -22,7 +22,6 @@ int main(int argc, char *const *argv)
 
     int lcd_off = 0;
     int verbose = 0;
-    int help = 0;
     char *colour_string = 0;
     char *cursor_string = 0;
 
@@ -44,7 +43,6 @@ int main(int argc, char *const *argv)
                         &opts_index)) != -1) {
         switch (s) {
         case 'h':
-            help = 1;
             print_help();
             break;
         case 'c':
@@ -83,12 +81,11 @@ int main(int argc, char *const *argv)
             n++;
         }
     } else {
-        r += LCD_cmd(DISPLAY_SET);
-        r += LCD_colour(Black);
+        LCD_off();
     }
 
     /* verbose flag print off more messages */
-    if (verbose && !help) {
+    if (verbose) {
         if (colour_string) {
             printf("Setting LCD colour to: %s\n", colour_string);
         }
@@ -178,5 +175,6 @@ This program also accepts input from the standard input.\n\n\
 \t\t\tTurn off the LCD.\n\n\
 Report bugs and make suggestions at:\n\
 https://github.com/fangfufu/Adafruit-RPi-LCD/issues\n", VERSION_NUMBER);
+    LCD_off();
     exit(1);
 }
