@@ -38,6 +38,12 @@ You can install the program by issuing the following commands:
 Please note that the compilation stage can be done on a Debian machine if you 
 have installed gcc-4.7-arm-linux-gnueabi from the Emdebian repository.
 
+Uninstallation
+--------------
+To uninstall type in the following in your terminal:
+
+    sudo make uninstall
+
 Dependency
 ----------
 This library/program depends on kernel module i2c-dev. You can load the module
@@ -65,6 +71,15 @@ Usage
 
     Report bugs and make suggestions at:
     https://github.com/fangfufu/Adafruit-RPi-LCD/issues
+
+Example
+-------
+To output the current time on your LCD, type in the following: 
+
+    date +\ \ \ %d\ %b\ %_Y\ \ \ \ \ \ %H:%M\ %Z | /usr/local/bin/adafruit-rpi-lcd -c yellow
+
+You can use your LCD as a clock by putting this in your crontab, and run it
+once every minute.
 
 Exit Code
 ---------
