@@ -159,12 +159,12 @@ Usage: adafruit-rpi-lcd [OPTION]... [MESSAGE]...\n\
 This program also accepts input from the standard input.\n\n\
 \
   -c, --colour\
-\t\t\tSet LCD colour, possible colour include:\n\
+\t\t\tSet LCD colour, possible colours include:\n\
 \t\t\t\tBlack, Red, Yellow, Green, Cyan, Blue,\n\
 \t\t\t\tMagenta, White.\n\
 \t\t\t\tColour names are case insensitive.\n\
   -u, --cursor\
-\t\t\tSet LCD cursor, possible option include:\n\
+\t\t\tSet LCD cursor, possible options include:\n\
 \t\t\t\tOn, Off, Blink\n\
 \t\t\t\tCursor options are case insensitive.\n\n\
   -v, --verbose\
