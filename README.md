@@ -38,6 +38,10 @@ You can install the program by issuing the following commands:
 Please note that the compilation stage can be done on a Debian machine if you 
 have installed gcc-4.7-arm-linux-gnueabi from the Emdebian repository.
 
+If you have Raspberry Pi Revision 1, you should replace the 'make' with:
+
+    make RPI_REV1=1
+
 Uninstallation
 --------------
 To uninstall type in the following in your terminal:
