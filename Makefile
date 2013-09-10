@@ -5,6 +5,11 @@ else
 endif
 
 CFLAGS = -std=gnu99 -Wall -Wextra -O2 -pedantic
+
+ifneq ($(RPI_REV1),)
+CFLAGS += -DRPI_REV1
+endif
+
 LDFLAGS =
 SOURCES = main.c gpio.c lcd.c button.c lcd_lowlevel.c lcd_cgram.c
 OBJECTS = $(SOURCES:.c=.o)
