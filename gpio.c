@@ -83,7 +83,7 @@ GPIOB_BUF_t GPIOB_buf;
 static int exp_write(Port port, uint8_t reg, uint8_t val)
 {
     if (!g_init) {
-        fprintf(stderr, "exp_write error: is not initialised.\n");
+        fprintf(stderr, "exp_write error: GPIO not initialised.\n");
         return -1;
     }
     uint8_t buf[2];
