@@ -15,7 +15,7 @@
  */
 typedef enum {
     PortA = 0x00,       /**<      Expander Port A         */
-    PortB = 0x10        /**<      Expander Port B         */
+    PortB = 0x01        /**<      Expander Port B         */
 } Port;
 
 /**

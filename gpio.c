@@ -19,33 +19,16 @@
 /** The address for the expansion board */
 #define I2C_ADDR                0x20
 
-/** Initial address of IOCON register */
-#define IOCON_BANK_0            0x0A
-
-/** Initial address of GPIOA register */
-#define GPIOA_ADDR_INIT		0x12
-
-/** Initial address of GPIOB register */
-#define GPIOB_ADDR_INIT		0x13
-
 /**      Address for IO Direction Register            */
 #define IODIR                   0x00
 /**      Address for Input Polarity Register          */
-#define IOPOL                   0x01
+#define IOPOL                   0x02
 /**      Address for General Configuration Register   */
-#define IOCON                   0x05
+#define IOCON                   0x0A
 /**      Address for Pull-up  Register                */
-#define GPPU                    0x06
+#define GPPU                    0x0C
 /**      Address for GPIO Register                    */
-#define GPIO                    0x09
-
-/**
- * @brief IOCON configuration
- * @details pg 18 of the data sheet
- * - Set Bank = 1 to registers for ports are grouped together,
- * - Set SEQOP = 1 to disable sequential operation.
- */
-#define IOCON_CONFIG            (1 << 5) | (1 <<7)
+#define GPIO                    0x12
 
 /**
  * @brief IO direction,
@@ -153,8 +136,7 @@ int GPIO_open()
         return -1;
     }
     /* Configure IO expander */
-    int r;
-    r = exp_write(PortA, IOCON_BANK_0, IOCON_CONFIG);
+    int r = 0;
     r += GPIO_direction(PortA, PORTA_IODIR);
     r += GPIO_direction(PortB, PORTB_IODIR);
     r += exp_write(PortA, IOPOL, PORTA_IOPOL);
@@ -177,9 +159,6 @@ int GPIO_open()
 
 int GPIO_close()
 {
-    exp_write(PortA, IOCON, 0x00);
-    exp_write(PortA, GPIOA_ADDR_INIT, 0x00);
-    exp_write(PortA, GPIOB_ADDR_INIT, 0x00);
     int t = close(fd);
     if (t == 0) {
         fd = g_init = 0;
