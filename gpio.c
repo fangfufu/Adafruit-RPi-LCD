@@ -19,8 +19,14 @@
 /** The address for the expansion board */
 #define I2C_ADDR                0x20
 
-/** Initial address of the IOCON register, (pg.5 of the datasheet) */
+/** Initial address of IOCON register */
 #define IOCON_BANK_0            0x0A
+
+/** Initial address of GPIOA register */
+#define GPIOA_ADDR_INIT		0x12
+
+/** Initial address of GPIOB register */
+#define GPIOB_ADDR_INIT		0x13
 
 /**      Address for IO Direction Register            */
 #define IODIR                   0x00
@@ -172,6 +178,8 @@ int GPIO_open()
 int GPIO_close()
 {
     exp_write(PortA, IOCON, 0x00);
+    exp_write(PortA, GPIOA_ADDR_INIT, 0x00);
+    exp_write(PortA, GPIOB_ADDR_INIT, 0x00);
     int t = close(fd);
     if (t == 0) {
         fd = g_init = 0;

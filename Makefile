@@ -4,6 +4,8 @@ else
   CC = arm-linux-gnueabi-gcc-4.7
 endif
 
+CC=cc
+
 CFLAGS = -std=gnu99 -Wall -Wextra -O2 -pedantic
 
 ifneq ($(RPI_REV1),)
