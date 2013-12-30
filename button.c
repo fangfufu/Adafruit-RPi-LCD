@@ -9,19 +9,20 @@
 
 /**
  * @brief Convert a raw value to a button enum value.
+ * @warning may not be working due to lcdproc compatibility changes
  */
 static Button raw_to_button(uint8_t btn)
 {
-    switch (btn) {
-    case 1:
+    switch (~btn) {
+    case ~1:
         return Select;
-    case 2:
+    case ~2:
         return Right;
-    case 4:
+    case ~4:
         return Down;
-    case 8:
+    case ~8:
         return Up;
-    case 16:
+    case ~16:
         return Left;
     default:
         return Null;

@@ -41,7 +41,7 @@
  * @brief Input polarity
  * @details 1 = inverse, 0 = normal (pg.13 of the datasheet)
  */
-#define PORTA_IOPOL             0x1F
+#define PORTA_IOPOL             0x00
 #define PORTB_IOPOL             0x00
 
 /**

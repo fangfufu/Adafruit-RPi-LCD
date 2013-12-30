@@ -13,7 +13,7 @@ CFLAGS += -DRPI_REV1
 endif
 
 LDFLAGS =
-SOURCES = main.c gpio.c lcd.c button.c lcd_lowlevel.c lcd_cgram.c
+SOURCES = main.c gpio.c lcd.c lcd_lowlevel.c lcd_cgram.c
 OBJECTS = $(SOURCES:.c=.o)
 EXECUTABLE = adafruit-rpi-lcd
 INSTALL_PATH = /usr/local/bin
