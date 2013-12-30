@@ -171,6 +171,7 @@ int GPIO_open()
 
 int GPIO_close()
 {
+    exp_write(PortA, IOCON, 0x00);
     int t = close(fd);
     if (t == 0) {
         fd = g_init = 0;

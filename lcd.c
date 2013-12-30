@@ -314,5 +314,6 @@ int LCD_off()
 {
     int r = LCD_cmd(DISPLAY_SET);
     r += LCD_colour(Black);
+    r += GPIO_close();
     return r;
 }

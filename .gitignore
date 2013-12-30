@@ -18,4 +18,5 @@
 
 # Custom settings
 .depend
-
+adafruit-rpi-lcd
+html
